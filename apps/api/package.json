@@ -1,0 +1,32 @@
+{
+  "name": "@headstrong/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "migrate": "tsx scripts/migrate.ts",
+    "test": "API_HOST=127.0.0.1 API_PORT=4000 DATABASE_URL=postgres://postgres:postgres@localhost:5432/headstrong JWT_SECRET=12345678901234567890123456789012 OPENAI_BASE_URL=http://localhost:11434/v1 OPENAI_API_KEY=local-dev-key QUEST_COMPOSER_PROVIDER=stub QUEST_COMPOSER_MODEL=headstrong-quest-composer TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx TWILIO_AUTH_TOKEN=test-token TWILIO_FROM_NUMBER=+15555555555 MOODLE_BASE_URL=https://moodle.example.com MOODLE_TOKEN=test-token ERPNEXT_BASE_URL=https://erpnext.example.com ERPNEXT_API_KEY=test-key ERPNEXT_API_SECRET=test-secret node --import tsx --test src/**/*.test.ts",
+    "seed:parent-student-link": "tsx scripts/seed-parent-student-link.ts"
+  },
+  "dependencies": {
+    "@headstrong/ai-gateway": "workspace:*",
+    "@headstrong/core": "workspace:*",
+    "@headstrong/moderation": "workspace:*",
+    "@headstrong/quest-composer": "workspace:*",
+    "@hono/zod-validator": "^0.3.0",
+    "@hono/node-server": "^1.13.7",
+    "dotenv": "^16.4.5",
+    "hono": "^4.6.10",
+    "jose": "^5.9.6",
+    "postgres": "^3.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.8.1",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2"
+  }
+}
