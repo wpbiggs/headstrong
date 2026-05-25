@@ -34,6 +34,7 @@ function createComposition() {
     },
     templateId: "fractions-lab",
     scenePlan: {
+      version: "v1",
       id: "fractions-lab-scene",
       templateId: "fractions-lab",
       title: "Fractions Lab",
@@ -58,6 +59,7 @@ function createComposition() {
         contentRef: "fraction-intro",
         templateId: "fractions-lab-task-1",
         scenePlan: {
+          version: "v1",
           id: "fractions-lab-task-1-scene",
           templateId: "fractions-lab-task-1",
           title: "Fractions Lab Task 1",

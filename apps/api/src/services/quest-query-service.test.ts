@@ -28,6 +28,7 @@ function createSessionFixture(overrides: Partial<Session>): Session {
 
 function createScenePlan(templateId: string) {
   return {
+    version: "v1" as const,
     id: `${templateId}-scene`,
     templateId,
     title: `${templateId} scene`,

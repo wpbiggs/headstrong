@@ -21,6 +21,7 @@ function buildTemplate(
   summary: string,
 ): ScenePlan {
   return scenePlanSchema.parse({
+    version: "v1",
     id: `${templateId}-scene`,
     templateId,
     title,
@@ -31,14 +32,14 @@ function buildTemplate(
         id: `${templateId}-guide`,
         type: "character",
         label: "Guide",
-        assetRef: `${templateId}-guide-asset`,
+        assetRef: `asset:${templateId}-guide-asset`,
         position: { x: 0, y: 1.5, z: -2 },
       },
       {
         id: `${templateId}-focus`,
         type: "object",
         label: "Focus Object",
-        assetRef: `${templateId}-focus-asset`,
+        assetRef: `asset:${templateId}-focus-asset`,
         position: { x: 0, y: 1, z: -1 },
       },
     ],
@@ -55,7 +56,7 @@ function buildTemplate(
       {
         id: `${templateId}-panel`,
         kind: "text",
-        uri: `${templateId}-instruction-card`,
+        uri: `asset:${templateId}-instruction-card`,
       },
     ],
     accessibility: {

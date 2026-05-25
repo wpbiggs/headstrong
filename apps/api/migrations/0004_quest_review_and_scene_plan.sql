@@ -22,6 +22,7 @@ update quest_tasks
 set scene_plan = coalesce(
   scene_plan,
   jsonb_build_object(
+    'version', 'v1',
     'id', id::text,
     'templateId', template_id,
     'title', title,
