@@ -6,6 +6,9 @@ import { env } from "./env";
 import type { AppVariables } from "./lib/context";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
+import { guildRoutes } from "./routes/guilds";
+import { moderationRoutes } from "./routes/moderation";
+import { postRoutes } from "./routes/posts";
 import { questRoutes } from "./routes/quest";
 
 const app = new Hono<{ Variables: AppVariables }>();
@@ -17,6 +20,9 @@ app.get("/health", (c) =>
 );
 app.route("/admin", adminRoutes);
 app.route("/auth", authRoutes);
+app.route("/posts", postRoutes);
+app.route("/guilds", guildRoutes);
+app.route("/moderation", moderationRoutes);
 app.route("/quests", questRoutes);
 
 serve(

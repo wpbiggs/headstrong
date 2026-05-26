@@ -59,6 +59,15 @@ export default function HomePage() {
           <p>
             <a href="/educator">Educator dashboard</a>
           </p>
+          <p>
+            <a href="/feed">Internal feed</a>
+          </p>
+          <p>
+            <a href="/parent-approvals">Parent approvals</a>
+          </p>
+          <p>
+            <a href="/moderation">Moderation queue</a>
+          </p>
         </article>
       </section>
     </main>

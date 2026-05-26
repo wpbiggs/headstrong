@@ -64,10 +64,10 @@ export async function canAccessStudentScope(
 export function requireParentOf(
   resolveStudentId: (
     context: Parameters<MiddlewareHandler<{ Variables: AppVariables }>>[0],
-  ) => string,
+  ) => string | Promise<string>,
 ) {
   return factory.createMiddleware(async (c, next) => {
-    const studentId = resolveStudentId(c);
+    const studentId = await resolveStudentId(c);
     const user = c.get("user");
     const repository = createQuestRepository();
     const allowed = await canAccessStudentScope(
