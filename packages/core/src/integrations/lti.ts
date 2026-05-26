@@ -29,6 +29,17 @@ export const ltiLaunchContextSchema = z.object({
   roles: z.array(z.string().min(1)),
 });
 
+export const ltiSessionHandoffSchema = z.object({
+  launch: ltiLaunchContextSchema,
+  session: z.object({
+    sub: z.string().uuid(),
+    email: z.string().email(),
+    role: z.enum(["student", "parent", "educator", "expert", "admin"]),
+    sessionId: z.string().uuid(),
+  }),
+  token: z.string().min(1),
+});
+
 export interface LtiProvider {
   initiateLogin(
     input: z.infer<typeof ltiOidcLoginRequestSchema>,

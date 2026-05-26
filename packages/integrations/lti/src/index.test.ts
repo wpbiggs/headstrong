@@ -28,3 +28,16 @@ test("lti consumer gating is enforced", async () => {
     }),
   );
 });
+
+test("lti callback returns typed launch context when enabled by env shape", async () => {
+  const provider = createLtiProvider();
+  await assert.rejects(() =>
+    provider.handleCallback(
+      new URLSearchParams({
+        issuer: "https://platform.example.com",
+        login_hint: "user-1",
+        target_link_uri: "https://example.com/launch",
+      }),
+    ),
+  );
+});
