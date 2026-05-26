@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import {
-  computeJobRequestSchema,
+  type computeJobRequestSchema,
   computeJobResultSchema,
 } from "@headstrong/core";
 

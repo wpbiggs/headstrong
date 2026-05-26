@@ -1,6 +1,12 @@
 import { OperatorPanel } from "../../components/operator-panel";
 import { fetchComputeJobsLive } from "../../lib/live-api";
 
+interface ComputeListItem {
+  id: string;
+  status: string;
+  type: string;
+}
+
 const demoJobs = {
   items: [
     {
@@ -78,7 +84,7 @@ export default async function ComputePage({
       </section>
       <section className="card">
         <h2>Recent jobs</h2>
-        {jobs.items.map((job: any) => (
+        {(jobs.items as ComputeListItem[]).map((job) => (
           <div key={job.id} className="history-row">
             <strong>{job.id}</strong>
             <span>{job.type}</span>

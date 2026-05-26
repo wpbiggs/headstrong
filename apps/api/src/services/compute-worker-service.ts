@@ -8,13 +8,29 @@ import { buildBalancedLedgerTransaction } from "@headstrong/ledger";
 import { env } from "../env";
 import { createCampaignRepository } from "../repositories/campaign-repository";
 import {
-  createComputeRepository,
   type ComputeRepository,
+  createComputeRepository,
 } from "../repositories/compute-repository";
+
+interface ComputeLedgerWriter {
+  createLedgerTransaction(input: {
+    id: string;
+    reference: string;
+    description: string;
+    entries: Array<{
+      accountCode: string;
+      direction: "debit" | "credit";
+      amount: number;
+      currency: "USD";
+      campaignId?: string;
+      metadata?: Record<string, unknown>;
+    }>;
+  }): Promise<void>;
+}
 
 export function createComputeWorkerService(
   repository: ComputeRepository = createComputeRepository(),
-  ledgerRepository = createCampaignRepository(),
+  ledgerRepository: ComputeLedgerWriter = createCampaignRepository(),
 ) {
   return {
     async processNextQueuedJob() {

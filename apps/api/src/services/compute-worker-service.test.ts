@@ -4,9 +4,15 @@ import type { ComputeJob } from "@headstrong/core";
 import type { ComputeRepository } from "../repositories/compute-repository";
 import { createComputeWorkerService } from "./compute-worker-service";
 
+type ComputeEventType = "queued" | "started" | "succeeded" | "failed" | "retry_scheduled";
+
+interface ComputeLedgerWriterStub {
+  createLedgerTransaction(input: { reference: string }): Promise<void>;
+}
+
 function createRepositoryFixture() {
   const jobs = new Map<string, ComputeJob>();
-  const events: Record<string, Array<{ type: string }>> = {};
+  const events: Record<string, Array<{ type: ComputeEventType }>> = {};
   const runs: string[] = [];
   const ledgerRefs: string[] = [];
 
@@ -36,7 +42,12 @@ function createRepositoryFixture() {
       throw new Error("unused");
     },
     async updateJob(id, input) {
-      const current = jobs.get(id)!;
+      const current = jobs.get(id);
+
+      if (!current) {
+        throw new Error("Job missing in fixture.");
+      }
+
       const updated: ComputeJob = {
         ...current,
         status: input.status,
@@ -65,13 +76,13 @@ function createRepositoryFixture() {
         type: input.type,
         payload: input.payload,
         createdAt: new Date().toISOString(),
-      } as any;
+      };
     },
     async getJobEvents(jobId) {
       return (events[jobId] ?? []).map((event) => ({
         id: crypto.randomUUID(),
         jobId,
-        type: event.type as any,
+        type: event.type,
         payload: {},
         createdAt: new Date().toISOString(),
       }));
@@ -96,7 +107,7 @@ function createRepositoryFixture() {
     async logAuditEvent() {},
   };
 
-  const ledgerRepository = {
+  const ledgerRepository: ComputeLedgerWriterStub = {
     async createLedgerTransaction(input: { reference: string }) {
       ledgerRefs.push(input.reference);
     },
@@ -117,7 +128,7 @@ test("worker processes queued job into succeeded state with events and provider 
   const fixture = createRepositoryFixture();
   const worker = createComputeWorkerService(
     fixture.repository,
-    fixture.ledgerRepository as any,
+    fixture.ledgerRepository,
   );
   const processed = await worker.processNextQueuedJob();
   assert.equal(processed?.status, "succeeded");

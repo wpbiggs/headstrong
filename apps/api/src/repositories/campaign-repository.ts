@@ -68,9 +68,7 @@ export interface CampaignRepository {
     cursor?: string,
     limit?: number,
   ): Promise<ReturnType<typeof campaignHistoryResponseSchema.parse>>;
-  getLedgerTotalsByCampaign(
-    campaignId: string,
-  ): Promise<{
+  getLedgerTotalsByCampaign(campaignId: string): Promise<{
     pledgedUsd: number;
     allocatedUsd: number;
     reservedUsd: number;

@@ -4,6 +4,14 @@ import {
   fetchCampaignHistoryLive,
 } from "../../../lib/live-api";
 
+interface CampaignHistoryItem {
+  transactionId: string;
+  reference: string;
+  accountCode: string;
+  direction: string;
+  amount: number;
+}
+
 const demoCampaign = {
   campaign: {
     id: "11111111-1111-4111-8111-111111111111",
@@ -130,7 +138,7 @@ export default async function CampaignDetailPage({
       ) : null}
       <section className="card">
         <h2>Ledger history</h2>
-        {history.items.map((item: any) => (
+        {(history.items as CampaignHistoryItem[]).map((item) => (
           <div
             key={`${item.transactionId}-${item.accountCode}`}
             className="history-row"
