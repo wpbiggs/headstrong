@@ -1,12 +1,13 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { type Session, createCampaignRequestSchema } from "@headstrong/core";
 import { buildBalancedLedgerTransaction } from "@headstrong/ledger";
+import { createCommonsRepository } from "../repositories/commons-repository";
+import { createQuestRepository } from "../repositories/app-repository";
 import {
   type CampaignRepository,
   createCampaignRepository,
   getCampaignDetail,
 } from "../repositories/campaign-repository";
-import { createCommonsRepository } from "../repositories/commons-repository";
 
 export class CampaignServiceError extends Error {
   constructor(
@@ -20,6 +21,7 @@ export class CampaignServiceError extends Error {
 export function createCampaignService(
   repository: CampaignRepository = createCampaignRepository(),
   commonsRepository = createCommonsRepository(),
+  userRepository = createQuestRepository(),
 ) {
   return {
     async createCampaign(user: Session, input: unknown) {
@@ -83,6 +85,101 @@ export function createCampaignService(
           detail.campaign.educatorUserId,
         ),
       };
+    },
+
+    async getCampaignHistory(
+      user: Session,
+      campaignId: string,
+      cursor?: string,
+      limit = 20,
+    ) {
+      if (!["admin", "educator", "parent", "expert"].includes(user.role)) {
+        throw new CampaignServiceError("Forbidden.", 403);
+      }
+      const campaign = await repository.getCampaignById(campaignId);
+      if (!campaign) {
+        throw new CampaignServiceError("Campaign not found.", 404);
+      }
+      return repository.getLedgerHistory(campaignId, cursor, limit);
+    },
+
+    async allocateCampaign(
+      user: Session,
+      campaignId: string,
+      input: { educatorId: string; amount: number; note: string },
+    ) {
+      if (user.role !== "admin") {
+        throw new CampaignServiceError("Forbidden.", 403);
+      }
+      const campaign = await repository.getCampaignById(campaignId);
+      if (!campaign) {
+        throw new CampaignServiceError("Campaign not found.", 404);
+      }
+      const educator = await userRepository.getUserById(input.educatorId);
+      if (!educator || educator.role !== "educator") {
+        throw new CampaignServiceError("Invalid educator id.", 422);
+      }
+      const totals = await repository.getLedgerTotalsByCampaign(campaignId);
+      if (input.amount > totals.outstandingUsd) {
+        throw new CampaignServiceError(
+          "Allocation exceeds campaign balance.",
+          409,
+        );
+      }
+      const hash = createHash("sha1")
+        .update(
+          `${campaignId}:${input.educatorId}:${input.amount}:${input.note}`,
+        )
+        .digest("hex")
+        .slice(0, 12);
+      const reference = `campaign:${campaignId}:allocation:${hash}`;
+      const transaction = buildBalancedLedgerTransaction({
+        reference,
+        description: `Campaign allocation to educator ${input.educatorId}`,
+        entries: [
+          {
+            accountCode: "campaign_allocations",
+            direction: "credit",
+            amount: input.amount,
+            currency: "USD",
+            campaignId,
+            metadata: {
+              actorUserId: user.sub,
+              note: input.note,
+              educatorId: input.educatorId,
+              jobId: undefined,
+            },
+          },
+          {
+            accountCode: "cash_holding",
+            direction: "debit",
+            amount: input.amount,
+            currency: "USD",
+            campaignId,
+            metadata: {
+              actorUserId: user.sub,
+              note: input.note,
+              educatorId: input.educatorId,
+            },
+          },
+        ],
+      });
+      try {
+        await repository.createLedgerTransaction(transaction);
+      } catch (error) {
+        throw new CampaignServiceError(
+          "Allocation replay detected or ledger write failed.",
+          409,
+        );
+      }
+      await repository.logAuditEvent({
+        actorUserId: user.sub,
+        action: "campaign_allocated",
+        entityType: "campaign",
+        entityId: campaignId,
+        payload: input,
+      });
+      return this.getCampaign(user, campaignId);
     },
   };
 }

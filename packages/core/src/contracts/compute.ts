@@ -5,7 +5,7 @@ export const computeJobTypeSchema = z.enum(["inference", "scoring"]);
 export const computeJobStatusSchema = z.enum([
   "queued",
   "running",
-  "validated",
+  "succeeded",
   "failed",
 ]);
 
@@ -42,6 +42,22 @@ export const computeJobResultSchema = z.object({
   penaltyApplied: z.boolean(),
 });
 
+export const computeJobEventTypeSchema = z.enum([
+  "queued",
+  "started",
+  "succeeded",
+  "failed",
+  "retry_scheduled",
+]);
+
+export const computeJobEventSchema = z.object({
+  id: z.string().uuid(),
+  jobId: z.string().uuid(),
+  type: computeJobEventTypeSchema,
+  payload: z.record(z.string(), z.unknown()),
+  createdAt: z.string().datetime(),
+});
+
 export const computeJobSchema = z.object({
   id: z.string().uuid(),
   version: computeProtocolVersionSchema,
@@ -54,8 +70,21 @@ export const computeJobSchema = z.object({
   providerId: z.string().min(1),
   validatorId: z.string().min(1),
   result: computeJobResultSchema.nullable(),
+  retryCount: z.number().int().nonnegative(),
+  lastError: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+});
+
+export const computeJobListRequestSchema = z.object({
+  state: computeJobStatusSchema.optional(),
+  cursor: z.string().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(30).default(20),
+});
+
+export const computeJobListResponseSchema = z.object({
+  items: z.array(computeJobSchema),
+  nextCursor: z.string().nullable(),
 });
 
 export type ComputeJob = z.infer<typeof computeJobSchema>;

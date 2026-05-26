@@ -58,6 +58,70 @@ function createRepositoryFixture() {
         })),
       }));
     },
+    async getLedgerBalance(accountCode, id) {
+      const items = (transactions.get(id) ?? []).flatMap(
+        (transaction) => transaction.entries,
+      );
+      return items
+        .filter((entry) => entry.accountCode === accountCode)
+        .reduce(
+          (sum, entry) =>
+            sum + (entry.direction === "credit" ? entry.amount : -entry.amount),
+          0,
+        );
+    },
+    async getLedgerHistory(id) {
+      return {
+        items: (transactions.get(id) ?? []).flatMap((transaction) =>
+          transaction.entries.map((entry) => ({
+            transactionId: transaction.id,
+            reference: transaction.reference,
+            description: transaction.description,
+            accountCode: entry.accountCode,
+            direction: entry.direction,
+            amount: entry.amount,
+            currency: entry.currency,
+            createdAt: new Date().toISOString(),
+            actorUserId:
+              (entry.metadata?.actorUserId as string | undefined) ?? null,
+            note: (entry.metadata?.note as string | undefined) ?? null,
+          })),
+        ),
+        nextCursor: null,
+      };
+    },
+    async getLedgerTotalsByCampaign(id) {
+      const items = (transactions.get(id) ?? []).flatMap(
+        (transaction) => transaction.entries,
+      );
+      const pledgedUsd = items
+        .filter(
+          (entry) =>
+            entry.accountCode === "campaign_pledges" &&
+            entry.direction === "credit",
+        )
+        .reduce((sum, entry) => sum + entry.amount, 0);
+      const allocatedUsd = items
+        .filter(
+          (entry) =>
+            entry.accountCode === "campaign_allocations" &&
+            entry.direction === "credit",
+        )
+        .reduce((sum, entry) => sum + entry.amount, 0);
+      const reservedUsd = items
+        .filter(
+          (entry) =>
+            entry.accountCode === "campaign_reserve" &&
+            entry.direction === "credit",
+        )
+        .reduce((sum, entry) => sum + entry.amount, 0);
+      return {
+        pledgedUsd,
+        allocatedUsd,
+        reservedUsd,
+        outstandingUsd: pledgedUsd - allocatedUsd - reservedUsd,
+      };
+    },
     async logAuditEvent(input) {
       auditLogs.push(input.action);
     },
@@ -111,6 +175,60 @@ test("non-admin cannot create campaign", async () => {
     (error: unknown) => {
       assert.ok(error instanceof CampaignServiceError);
       assert.equal(error.status, 403);
+      return true;
+    },
+  );
+});
+
+test("campaign allocation cannot overspend and history is ledger-backed", async () => {
+  const fixture = createRepositoryFixture();
+  const service = createCampaignService(
+    fixture.repository,
+    {
+      getContributorScore: async (contributorUserId: string) => ({
+        contributorUserId,
+        assetCount: 0,
+        remixCount: 0,
+        impactCount: 0,
+        score: 0,
+      }),
+    } as never,
+    {
+      getUserById: async (id: string) => ({
+        id,
+        email: "educator@example.com",
+        role: "educator",
+        createdAt: new Date().toISOString(),
+      }),
+    } as never,
+  );
+  const admin = createSessionFixture({ role: "admin" });
+  const campaign = await service.createCampaign(admin, {
+    educatorUserId: crypto.randomUUID(),
+    title: "Support Teacher Mina",
+    description: "Initial campaign",
+    openingPledgeUsd: 100,
+  });
+  const allocated = await service.allocateCampaign(admin, campaign.id, {
+    educatorId: crypto.randomUUID(),
+    amount: 25,
+    note: "First allocation",
+  });
+  assert.equal(allocated.totals.allocatedUsd, 25);
+  assert.equal(allocated.totals.outstandingUsd, 75);
+  const history = await service.getCampaignHistory(admin, campaign.id);
+  assert.ok(history.items.length >= 4);
+
+  await assert.rejects(
+    () =>
+      service.allocateCampaign(admin, campaign.id, {
+        educatorId: crypto.randomUUID(),
+        amount: 200,
+        note: "Too much",
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof CampaignServiceError);
+      assert.equal(error.status, 409);
       return true;
     },
   );

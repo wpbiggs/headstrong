@@ -55,6 +55,7 @@ export function summarizeCampaignTotals(
     pledgedUsd: 0,
     allocatedUsd: 0,
     reservedUsd: 0,
+    outstandingUsd: 0,
   };
 
   for (const transaction of transactions) {
@@ -79,6 +80,9 @@ export function summarizeCampaignTotals(
       }
     }
   }
+
+  totals.outstandingUsd =
+    totals.pledgedUsd - totals.allocatedUsd - totals.reservedUsd;
 
   return totals;
 }

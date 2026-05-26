@@ -22,6 +22,13 @@ export default function CampaignsPage() {
           { name: "openingPledgeUsd", placeholder: "100" },
         ]}
       />
+      <section className="card">
+        <h2>Follow-up</h2>
+        <p>
+          Open `/campaigns/:id?email=...&role=admin` to review ledger history
+          and allocate funds.
+        </p>
+      </section>
     </main>
   );
 }

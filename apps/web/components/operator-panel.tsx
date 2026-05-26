@@ -4,10 +4,12 @@ import { useState } from "react";
 
 type OperatorMode =
   | "campaignCreate"
+  | "campaignAllocate"
   | "lmsPublish"
   | "lmsCompletion"
   | "computeScheduleInference"
-  | "computeFetch";
+  | "computeFetch"
+  | "computeProcessNext";
 
 async function runOperatorAction(
   mode: OperatorMode,
@@ -26,6 +28,16 @@ async function runOperatorAction(
         openingPledgeUsd: Number(values.openingPledgeUsd || 0),
       });
       return `Campaign created: ${campaign.id}`;
+    }
+    case "campaignAllocate": {
+      const campaign = await liveApi.allocateCampaignLive({
+        id: values.campaignId,
+        email: values.email,
+        educatorId: values.educatorId,
+        amount: Number(values.amount),
+        note: values.note,
+      });
+      return `Allocation applied. Outstanding: ${campaign.totals.outstandingUsd}`;
     }
     case "lmsPublish": {
       const result = await liveApi.publishQuestToLmsLive({
@@ -72,6 +84,15 @@ async function runOperatorAction(
         role: "educator",
       });
       return `Job ${result.id}: ${result.status}`;
+    }
+    case "computeProcessNext": {
+      const result = await liveApi.processNextComputeJobLive({
+        email: values.email,
+        role: "educator",
+      });
+      return result
+        ? `Processed job ${result.id} with status ${result.status}`
+        : "No queued jobs.";
     }
   }
 }

@@ -33,6 +33,7 @@
       "@headstrong/integration-open-badges": [
         "packages/integrations/open-badges/src/index.ts"
       ],
+      "@headstrong/compute-worker": ["packages/compute-worker/src/index.ts"],
       "@headstrong/quest-composer": ["packages/quest-composer/src/index.ts"],
       "@headstrong/scene-planner": ["packages/scene-planner/src/index.ts"]
     }

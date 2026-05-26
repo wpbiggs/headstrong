@@ -1,4 +1,7 @@
-import { computeJobRequestSchema } from "@headstrong/core";
+import {
+  computeJobListRequestSchema,
+  computeJobRequestSchema,
+} from "@headstrong/core";
 import { zValidator } from "@hono/zod-validator";
 import { type Context, Hono } from "hono";
 import type { AppVariables } from "../lib/context";
@@ -7,8 +10,10 @@ import {
   ComputeServiceError,
   createComputeService,
 } from "../services/compute-service";
+import { createComputeWorkerService } from "../services/compute-worker-service";
 
 const computeService = createComputeService();
+const computeWorkerService = createComputeWorkerService();
 
 function handleComputeServiceError(
   error: unknown,
@@ -40,6 +45,21 @@ export const computeRoutes: Hono<{ Variables: AppVariables }> = new Hono<{
     },
   )
   .get(
+    "/jobs",
+    requireAuth,
+    requireRole("admin", "educator"),
+    zValidator("query", computeJobListRequestSchema),
+    async (c) => {
+      try {
+        return c.json(
+          await computeService.listJobs(c.get("user"), c.req.valid("query")),
+        );
+      } catch (error) {
+        return handleComputeServiceError(error, c);
+      }
+    },
+  )
+  .get(
     "/jobs/:id",
     requireAuth,
     requireRole("admin", "educator"),
@@ -48,6 +68,18 @@ export const computeRoutes: Hono<{ Variables: AppVariables }> = new Hono<{
         return c.json(
           await computeService.getJob(c.get("user"), c.req.param("id")),
         );
+      } catch (error) {
+        return handleComputeServiceError(error, c);
+      }
+    },
+  )
+  .post(
+    "/jobs/process-next",
+    requireAuth,
+    requireRole("admin", "educator"),
+    async (c) => {
+      try {
+        return c.json(await computeWorkerService.processNextQueuedJob());
       } catch (error) {
         return handleComputeServiceError(error, c);
       }

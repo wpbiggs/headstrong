@@ -48,10 +48,35 @@ export const createCampaignRequestSchema = z.object({
   openingPledgeUsd: z.number().nonnegative().default(0),
 });
 
+export const allocateCampaignRequestSchema = z.object({
+  educatorId: z.string().uuid(),
+  amount: z.number().positive(),
+  note: z.string().min(1).max(500),
+});
+
 export const campaignTotalsSchema = z.object({
   pledgedUsd: z.number().nonnegative(),
   allocatedUsd: z.number().nonnegative(),
   reservedUsd: z.number().nonnegative(),
+  outstandingUsd: z.number(),
+});
+
+export const ledgerHistoryItemSchema = z.object({
+  transactionId: z.string().uuid(),
+  reference: z.string().min(1),
+  description: z.string().min(1),
+  accountCode: z.string().min(1),
+  direction: ledgerEntryDirectionSchema,
+  amount: z.number().positive(),
+  currency: z.literal("USD"),
+  createdAt: z.string().datetime(),
+  actorUserId: z.string().uuid().nullable(),
+  note: z.string().nullable(),
+});
+
+export const campaignHistoryResponseSchema = z.object({
+  items: z.array(ledgerHistoryItemSchema),
+  nextCursor: z.string().nullable(),
 });
 
 export const campaignDetailSchema = z.object({

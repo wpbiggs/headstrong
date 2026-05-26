@@ -33,6 +33,8 @@ function createRepositoryFixture() {
         providerId: input.providerId,
         validatorId: input.validatorId,
         result: null,
+        retryCount: 0,
+        lastError: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -48,6 +50,8 @@ function createRepositoryFixture() {
         ...current,
         status: input.status,
         result: (input.result as ComputeJob["result"]) ?? current.result,
+        retryCount: input.retryCount ?? current.retryCount,
+        lastError: input.lastError ?? current.lastError,
         updatedAt: new Date().toISOString(),
       };
       jobs.set(id, updated);
@@ -55,6 +59,30 @@ function createRepositoryFixture() {
     },
     async getJobById(id) {
       return jobs.get(id) ?? null;
+    },
+    async listJobs() {
+      return { items: [...jobs.values()], nextCursor: null };
+    },
+    async createJobEvent() {
+      return {
+        id: crypto.randomUUID(),
+        jobId: crypto.randomUUID(),
+        type: "queued",
+        payload: {},
+        createdAt: new Date().toISOString(),
+      };
+    },
+    async getJobEvents() {
+      return [];
+    },
+    async upsertJobResult() {
+      throw new Error("unused");
+    },
+    async createProviderRun() {
+      throw new Error("unused");
+    },
+    async getNextQueuedJob() {
+      return null;
     },
     async logAuditEvent(input) {
       auditLogs.push(input.action);
@@ -70,12 +98,9 @@ function createRepositoryFixture() {
   return { repository, ledgerRepository, jobs, auditLogs, ledgerTransactions };
 }
 
-test("valid inference job is scheduled, validated, and rewarded", async () => {
+test("valid inference job is scheduled into queued state", async () => {
   const fixture = createRepositoryFixture();
-  const service = createComputeService(
-    fixture.repository,
-    fixture.ledgerRepository,
-  );
+  const service = createComputeService(fixture.repository);
   const educator = createSessionFixture({});
   const job = await service.scheduleJob(educator, {
     version: "v1",
@@ -89,17 +114,14 @@ test("valid inference job is scheduled, validated, and rewarded", async () => {
     providerId: "provider-1",
     validatorId: "validator-1",
   });
-  assert.equal(job.status, "validated");
-  assert.ok(fixture.auditLogs.includes("compute_job_validated"));
-  assert.equal(fixture.ledgerTransactions.length, 1);
+  assert.equal(job.status, "queued");
+  assert.ok(fixture.auditLogs.includes("compute_job_queued"));
+  assert.equal(fixture.ledgerTransactions.length, 0);
 });
 
-test("bad expected output causes penalty path", async () => {
+test("scheduling preserves queued state even with expected output present", async () => {
   const fixture = createRepositoryFixture();
-  const service = createComputeService(
-    fixture.repository,
-    fixture.ledgerRepository,
-  );
+  const service = createComputeService(fixture.repository);
   const educator = createSessionFixture({});
   const job = await service.scheduleJob(educator, {
     version: "v1",
@@ -114,17 +136,14 @@ test("bad expected output causes penalty path", async () => {
     providerId: "provider-1",
     validatorId: "validator-1",
   });
-  assert.equal(job.status, "failed");
-  assert.ok(fixture.auditLogs.includes("compute_job_penalized"));
-  assert.equal(fixture.ledgerTransactions.length, 1);
+  assert.equal(job.status, "queued");
+  assert.ok(fixture.auditLogs.includes("compute_job_queued"));
+  assert.equal(fixture.ledgerTransactions.length, 0);
 });
 
 test("unauthorized users cannot schedule jobs", async () => {
   const fixture = createRepositoryFixture();
-  const service = createComputeService(
-    fixture.repository,
-    fixture.ledgerRepository,
-  );
+  const service = createComputeService(fixture.repository);
   await assert.rejects(
     () =>
       service.scheduleJob(createSessionFixture({ role: "student" }), {

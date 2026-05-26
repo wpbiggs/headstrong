@@ -1,6 +1,29 @@
 import { OperatorPanel } from "../../components/operator-panel";
+import { fetchComputeJobsLive } from "../../lib/live-api";
 
-export default function ComputePage() {
+const demoJobs = {
+  items: [
+    {
+      id: "11111111-1111-4111-8111-111111111111",
+      status: "queued",
+      type: "inference",
+      providerId: "provider-1",
+      validatorId: "validator-1",
+    },
+  ],
+  nextCursor: null,
+};
+
+export default async function ComputePage({
+  searchParams,
+}: { searchParams: { email?: string } }) {
+  const jobs = searchParams.email
+    ? await fetchComputeJobsLive({
+        email: searchParams.email,
+        role: "educator",
+        limit: 20,
+      }).catch(() => demoJobs)
+    : demoJobs;
   return (
     <main>
       <section className="hero">
@@ -45,6 +68,23 @@ export default function ComputePage() {
             { name: "jobId", placeholder: "compute job uuid" },
           ]}
         />
+        <OperatorPanel
+          title="Process next queued job"
+          description="Worker-style queue processing for the next queued job."
+          submitLabel="Process next job"
+          mode="computeProcessNext"
+          fields={[{ name: "email", placeholder: "educator email" }]}
+        />
+      </section>
+      <section className="card">
+        <h2>Recent jobs</h2>
+        {jobs.items.map((job: any) => (
+          <div key={job.id} className="history-row">
+            <strong>{job.id}</strong>
+            <span>{job.type}</span>
+            <span>{job.status}</span>
+          </div>
+        ))}
       </section>
     </main>
   );

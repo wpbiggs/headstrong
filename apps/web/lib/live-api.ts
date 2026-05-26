@@ -256,6 +256,57 @@ export async function fetchCampaignDetailLive(input: {
   return response.json();
 }
 
+export async function fetchCampaignHistoryLive(input: {
+  id: string;
+  email: string;
+  role: "admin" | "educator" | "parent" | "expert";
+  cursor?: string;
+  limit?: number;
+}) {
+  const token = await createToken({ email: input.email, role: input.role });
+  const url = new URL(
+    `${env.NEXT_PUBLIC_API_URL}/campaigns/${input.id}/history`,
+  );
+  if (input.cursor) url.searchParams.set("cursor", input.cursor);
+  if (input.limit) url.searchParams.set("limit", String(input.limit));
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("Failed to fetch campaign history.");
+  return response.json();
+}
+
+export async function allocateCampaignLive(input: {
+  id: string;
+  email: string;
+  educatorId: string;
+  amount: number;
+  note: string;
+}) {
+  const token = await createToken({ email: input.email, role: "admin" });
+  const response = await fetch(
+    `${env.NEXT_PUBLIC_API_URL}/campaigns/${input.id}/allocate`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        educatorId: input.educatorId,
+        amount: input.amount,
+        note: input.note,
+      }),
+    },
+  );
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.error ?? "Failed to allocate campaign funds.");
+  }
+  return response.json();
+}
+
 export async function publishQuestToLmsLive(input: {
   questId: string;
   email: string;
@@ -360,6 +411,47 @@ export async function fetchComputeJobLive(input: {
     },
   );
   if (!response.ok) throw new Error("Failed to fetch compute job.");
+  return response.json();
+}
+
+export async function fetchComputeJobsLive(input: {
+  email: string;
+  role: "educator" | "admin";
+  state?: "queued" | "running" | "succeeded" | "failed";
+  cursor?: string;
+  limit?: number;
+}) {
+  const token = await createToken({ email: input.email, role: input.role });
+  const url = new URL(`${env.NEXT_PUBLIC_API_URL}/compute/jobs`);
+  if (input.state) url.searchParams.set("state", input.state);
+  if (input.cursor) url.searchParams.set("cursor", input.cursor);
+  if (input.limit) url.searchParams.set("limit", String(input.limit));
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("Failed to fetch compute jobs.");
+  return response.json();
+}
+
+export async function processNextComputeJobLive(input: {
+  email: string;
+  role: "educator" | "admin";
+}) {
+  const token = await createToken({ email: input.email, role: input.role });
+  const response = await fetch(
+    `${env.NEXT_PUBLIC_API_URL}/compute/jobs/process-next`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.error ?? "Failed to process compute queue.");
+  }
   return response.json();
 }
 
