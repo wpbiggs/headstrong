@@ -9,7 +9,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "db:migrate": "pnpm --filter @headstrong/api migrate",
-    "test": "pnpm --filter @headstrong/api test"
+    "test": "pnpm --filter @headstrong/api test && pnpm --filter @headstrong/integration-lti test && pnpm --filter @headstrong/integration-rostering test && pnpm --filter @headstrong/integration-google-classroom test && pnpm --filter @headstrong/integration-open-badges test"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

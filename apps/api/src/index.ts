@@ -6,7 +6,12 @@ import { env } from "./env";
 import type { AppVariables } from "./lib/context";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
+import { campaignRoutes } from "./routes/campaigns";
+import { commonsRoutes } from "./routes/commons";
+import { computeRoutes } from "./routes/compute";
 import { guildRoutes } from "./routes/guilds";
+import { integrationRoutes } from "./routes/integrations";
+import { lmsRoutes } from "./routes/lms";
 import { moderationRoutes } from "./routes/moderation";
 import { postRoutes } from "./routes/posts";
 import { questRoutes } from "./routes/quest";
@@ -20,8 +25,13 @@ app.get("/health", (c) =>
 );
 app.route("/admin", adminRoutes);
 app.route("/auth", authRoutes);
+app.route("/campaigns", campaignRoutes);
+app.route("/commons", commonsRoutes);
+app.route("/compute", computeRoutes);
 app.route("/posts", postRoutes);
 app.route("/guilds", guildRoutes);
+app.route("/integrations", integrationRoutes);
+app.route("/lms", lmsRoutes);
 app.route("/moderation", moderationRoutes);
 app.route("/quests", questRoutes);
 

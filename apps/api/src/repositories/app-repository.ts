@@ -1,5 +1,6 @@
 import type {
   ComposeQuestResponse,
+  MasterySignal,
   ParentStudentLink,
   Quest,
   QuestEvent,
@@ -230,6 +231,24 @@ export interface QuestRepository {
   getQuestById(questId: string): Promise<Quest | null>;
   getQuestEvents(questId: string): Promise<QuestEvent[]>;
   getQuestTasks(questId: string): Promise<QuestTask[]>;
+  getMasterySignal(
+    learnerId: string,
+    skillId: string,
+  ): Promise<MasterySignal | null>;
+  upsertMasterySignal(input: {
+    learnerId: string;
+    skillId: string;
+    score: number;
+    evidenceCount: number;
+  }): Promise<MasterySignal>;
+  createLmsSyncEvent(input: {
+    provider: "moodle" | "erpnext" | "gibbon";
+    questId: string | null;
+    learnerId: string | null;
+    assignmentExternalId: string | null;
+    idempotencyKey: string;
+    payload: Record<string, unknown>;
+  }): Promise<boolean>;
   logAuditEvent(input: {
     actorUserId: string;
     action: string;
@@ -595,6 +614,58 @@ export function createQuestRepository(
       `;
 
       return rows.map(mapQuestTaskRow);
+    },
+
+    async getMasterySignal(learnerId, skillId) {
+      const [row] = await client`
+        select skill_id, learner_id, score, evidence_count
+        from mastery_signals
+        where learner_id = ${learnerId} and skill_id = ${skillId}
+      `;
+      return row
+        ? {
+            skillId: String(row.skill_id),
+            score: Number(row.score),
+            evidenceCount: Number(row.evidence_count),
+          }
+        : null;
+    },
+
+    async upsertMasterySignal(input) {
+      const [row] = await client`
+        insert into mastery_signals (skill_id, learner_id, score, evidence_count)
+        values (${input.skillId}, ${input.learnerId}, ${input.score}, ${input.evidenceCount})
+        on conflict (skill_id, learner_id)
+        do update set score = excluded.score, evidence_count = excluded.evidence_count, updated_at = now()
+        returning skill_id, learner_id, score, evidence_count
+      `;
+      return {
+        skillId: String(row.skill_id),
+        score: Number(row.score),
+        evidenceCount: Number(row.evidence_count),
+      };
+    },
+
+    async createLmsSyncEvent(input) {
+      const rows = await client`
+        insert into lms_sync_events (
+          provider,
+          quest_id,
+          learner_id,
+          assignment_external_id,
+          idempotency_key,
+          payload
+        ) values (
+          ${input.provider},
+          ${input.questId},
+          ${input.learnerId},
+          ${input.assignmentExternalId},
+          ${input.idempotencyKey},
+          ${JSON.stringify(input.payload)}::jsonb
+        ) on conflict (idempotency_key) do nothing
+        returning id
+      `;
+      return rows.length > 0;
     },
 
     async logAuditEvent(input) {

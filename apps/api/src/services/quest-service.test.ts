@@ -275,6 +275,15 @@ function createRepositoryFixture() {
     async getQuestTasks(questId: string) {
       return tasks.get(questId) ?? [];
     },
+    async getMasterySignal() {
+      return null;
+    },
+    async upsertMasterySignal() {
+      throw new Error("Not used in quest tests.");
+    },
+    async createLmsSyncEvent() {
+      return false;
+    },
     async logAuditEvent(input: { action: string }) {
       auditLogs.push(input.action);
     },

@@ -19,6 +19,20 @@
       "@headstrong/moderation": ["packages/moderation/src/index.ts"],
       "@headstrong/messaging": ["packages/messaging/src/index.ts"],
       "@headstrong/lms-adapters": ["packages/lms-adapters/src/index.ts"],
+      "@headstrong/ledger": ["packages/ledger/src/index.ts"],
+      "@headstrong/core/integrations": [
+        "packages/core/src/integrations/index.ts"
+      ],
+      "@headstrong/integration-lti": ["packages/integrations/lti/src/index.ts"],
+      "@headstrong/integration-rostering": [
+        "packages/integrations/rostering/src/index.ts"
+      ],
+      "@headstrong/integration-google-classroom": [
+        "packages/integrations/google-classroom/src/index.ts"
+      ],
+      "@headstrong/integration-open-badges": [
+        "packages/integrations/open-badges/src/index.ts"
+      ],
       "@headstrong/quest-composer": ["packages/quest-composer/src/index.ts"],
       "@headstrong/scene-planner": ["packages/scene-planner/src/index.ts"]
     }

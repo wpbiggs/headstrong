@@ -248,6 +248,15 @@ function createRepositoryFixture() {
     async getQuestTasks() {
       return [] as QuestTask[];
     },
+    async getMasterySignal() {
+      return null;
+    },
+    async upsertMasterySignal() {
+      throw new Error("Not used in query tests.");
+    },
+    async createLmsSyncEvent() {
+      return false;
+    },
     async logAuditEvent(input: { action: string }) {
       auditLogs.push(input.action);
     },

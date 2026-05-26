@@ -68,6 +68,18 @@ export default function HomePage() {
           <p>
             <a href="/moderation">Moderation queue</a>
           </p>
+          <p>
+            <a href="/campaigns">Campaign operator</a>
+          </p>
+          <p>
+            <a href="/lms">LMS operator</a>
+          </p>
+          <p>
+            <a href="/compute">Compute operator</a>
+          </p>
+          <p>
+            <a href="/commons">Curriculum commons</a>
+          </p>
         </article>
       </section>
     </main>
