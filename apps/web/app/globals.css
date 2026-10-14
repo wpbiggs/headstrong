@@ -138,3 +138,47 @@ a {
   gap: 0.75rem;
   margin: 1rem 0;
 }
+:root .learning-journey {
+  display: grid;
+  gap: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.learning-journey form,
+.learning-journey label {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.learning-journey form {
+  margin-top: 1rem;
+}
+
+.learning-journey input,
+.learning-journey textarea,
+.learning-journey select,
+.learning-journey button {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 0.65rem;
+  font: inherit;
+  border: 1px solid #62708c;
+  border-radius: 0.4rem;
+}
+
+.learning-journey textarea {
+  min-height: 6rem;
+}
+
+.learning-journey button {
+  cursor: pointer;
+}
+
+.learning-journey button:disabled {
+  cursor: not-allowed;
+}
+
+.learning-journey :focus-visible {
+  outline: 3px solid #7cdfff;
+  outline-offset: 3px;
+}

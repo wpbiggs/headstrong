@@ -1,7 +1,14 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "files": {
-    "ignore": [".turbo/**", "**/.turbo/**", ".next/**", "dist/**"]
+    "ignore": [
+      ".turbo/**",
+      "**/.turbo/**",
+      ".next/**",
+      "dist/**",
+      "test-results/**",
+      "playwright-report/**"
+    ]
   },
   "formatter": {
     "enabled": true,

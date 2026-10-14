@@ -46,6 +46,12 @@ export default function HomePage() {
         </article>
 
         <XrCapabilityCard />
+        {process.env.NEXT_PUBLIC_ENABLE_LEARNING_JOURNEYS === "true" ? (
+          <article className="card">
+            <h2>Local learning prototype</h2>
+            <a href="/learn">Start a learner-directed journey</a>
+          </article>
+        ) : null}
 
         <article className="card">
           <p className="eyebrow">Phase 2</p>
