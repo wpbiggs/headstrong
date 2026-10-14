@@ -5,17 +5,19 @@
 Local prototype verified. **Not production-ready, not a complete education platform, and
 not an approval to deploy or use real children’s data.** Existing uncommitted campaign,
 compute, commons and integration work was preserved and excluded from this slice’s commit.
+An independent detached checkout of the committed slice was installed offline with the
+frozen lockfile and rechecked, so these results do not depend on that inherited work.
 
 ## Executed checks
 
 | Check | Outcome |
 | --- | --- |
-| `pnpm lint` | Pass after formatting new files and correcting two inherited import-order issues in the working tree |
+| `pnpm lint` | Pass; clean-checkout validation found one pre-existing test-format defect, fixed without including inherited behavioral changes |
 | `pnpm typecheck` | Pass; includes new API fixtures/integration and browser test sources |
 | `pnpm test` | 51 passing root-suite tests (44 API, 7 integration-package scaffold tests) |
 | Extra ledger/LMS package tests | 7 pass; these are omitted by the existing root test command |
 | `test:learning:integration` | 7 pass against a uniquely named disposable local PostgreSQL 17 database; database removed afterward |
-| `test:learning:browser` | 2 pass with local Chrome/Playwright: full journey, keyboard controls, stop/resume, session clearing, mobile width, WebGL-failure alternative |
+| `test:learning:browser` | 2 pass with local Chrome/Playwright against both dev and a locally served production web build: full journey, keyboard controls, stop/resume, session clearing, mobile width, WebGL-failure alternative |
 | `pnpm build` with explicit public fixture env | Pass across 15 packages; existing Turbo warnings about packages with no emitted build outputs remain |
 | `pnpm audit --prod --json` | Fails: registry reports 2 critical, 24 high, 47 moderate and 5 low vulnerability occurrences; dependency remediation is a release blocker |
 
