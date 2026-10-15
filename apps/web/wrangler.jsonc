@@ -5,7 +5,7 @@
   "main": "cloudflare/entry.ts",
   "compatibility_date": "2026-10-14",
   "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": false,
+  "workers_dev": true,
   "preview_urls": false,
   "assets": {
     "binding": "ASSETS",
@@ -14,7 +14,7 @@
   },
   "services": [{ "binding": "API", "service": "headstrong-preview-api" }],
   "vars": {
-    "PREVIEW_SYNTHETIC_DATA_ONLY": "false",
+    "PREVIEW_SYNTHETIC_DATA_ONLY": "true",
     "ACCESS_ISSUER": "https://crimson-forest-2c4e.cloudflareaccess.com",
     "ACCESS_AUDIENCE": "364cff62774f60f8b547915ba201496fb68fbcee57a1bc9bb0889ef272d11b46"
   },

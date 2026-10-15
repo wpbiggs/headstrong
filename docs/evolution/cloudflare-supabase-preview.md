@@ -1,8 +1,9 @@
 # Cloudflare + Supabase private preview
 
-**Status: deployment preparation, not deployed. Synthetic accounts/data only.**
+**Status: private synthetic dev deployed after explicit approval; not production.**
+See [dev-environment-state.md](dev-environment-state.md) for the actual resources and checks.
 No VPS, CI runner, hosted AI, Supabase Auth, browser database SDK, storage bucket or queue
-is required for this slice. Cloud accounts/resources are not created by local verification.
+is required for this slice. Local verification itself does not create cloud resources.
 
 ## Architecture
 
@@ -22,9 +23,11 @@ Invited operator → Cloudflare Access → web Worker (vinext / existing Next ap
 - The web Worker verifies Cloudflare Access RS256 signatures, issuer, audience and required
   claims; trusting an email header is insufficient. Access admits invited preview operators;
   it does **not** assign platform roles or replace the learner bearer credential.
-- Both workers default off (`PREVIEW_SYNTHETIC_DATA_ONLY=false`), `workers_dev=false`,
-  `preview_urls=false`, with no routes. Static assets use `run_worker_first=true` so they
-  cannot bypass the application gate. The API is reachable only through a service binding.
+- The prepared templates were default-off with public URLs disabled. The approved dev
+  configurations now enable the synthetic flag and web workers.dev hostname protected by
+  Access. API workers.dev and both version URLs remain off. Static assets use
+  `run_worker_first=true` and are dispatched to ASSETS only after the application gate.
+  The API is reachable only through a service binding.
 - Only the bearer/content-type headers cross the gateway; Access JWTs/cookies do not.
   POSTs require same-origin `Origin`; only GET/POST API requests are forwarded. No CORS
   allow-all headers are used. Rate-limit bindings protect the API gateway (per Access subject)
@@ -72,9 +75,9 @@ Production dependency audit: **0 reported advisories**. Complete toolchain audit
 No patched braces version was available at verification. The described attack requires
 malicious nested glob patterns; the observed dependency path is build tooling, not a verified
 learner-facing exploit. Do not run builds on untrusted repositories/patterns. This finding
-is **not waived**: the complete audit leaves `verify:cloudflare` at exit code **1**, despite
-all functional/runtime checks passing. Resolve or explicitly review this dependency risk
-before approving deployment; no silent audit exceptions were added. A scoped compatible
+is **not suppressed**: the complete audit leaves `verify:cloudflare` at exit code **1**, despite
+all functional/runtime checks passing. The user explicitly accepted the reviewed risk
+for this owner-only synthetic dev deployment, not production. A scoped compatible
 fflate 0.7.3 → 0.7.5 override removes a separate transitive ZIP parsing advisory.
 
 The token field now waits for client hydration before accepting input. Browser verification

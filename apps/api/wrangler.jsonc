@@ -7,10 +7,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "preview_urls": false,
-  "vars": { "PREVIEW_SYNTHETIC_DATA_ONLY": "false" },
+  "vars": { "PREVIEW_SYNTHETIC_DATA_ONLY": "true" },
   "secrets": { "required": ["JWT_SECRET"] },
   "hyperdrive": [
-    { "binding": "HYPERDRIVE", "id": "00000000000000000000000000000000" }
+    { "binding": "HYPERDRIVE", "id": "6d3d54166e67405a881e082339413cb3" }
   ],
   "ratelimits": [
     {

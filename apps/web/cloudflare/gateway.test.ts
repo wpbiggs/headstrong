@@ -3,6 +3,34 @@ import test from "node:test";
 import { SignJWT, createLocalJWKSet, exportJWK, generateKeyPair } from "jose";
 import { verifyAccessClaims, verifyPreviewAccess } from "./access";
 import { type PreviewGateway, previewGateway } from "./gateway";
+import { renderPreviewRequest } from "./render";
+
+test("authenticated build assets use ASSETS while journey HTML uses vinext", async () => {
+  const assets = {
+    fetch: async () =>
+      new Response("asset", { headers: { "Content-Type": "text/css" } }),
+  };
+  const render = async () => new Response("journey");
+  for (const path of [
+    "/_next/static/css/index.css",
+    "/_next/static/chunks/client.js",
+    "/assets/scene.js",
+  ]) {
+    const request = new Request(`https://preview.example.test${path}`);
+    const response = await renderPreviewRequest(request, assets, render);
+    assert.equal(await response.text(), "asset");
+  }
+  assert.equal(
+    await (
+      await renderPreviewRequest(
+        new Request("https://preview.example.test/learn"),
+        assets,
+        render,
+      )
+    ).text(),
+    "journey",
+  );
+});
 
 test("Access claims require verified RS256, issuer, audience, expiry and subject", async () => {
   const { privateKey, publicKey } = await generateKeyPair("RS256");
