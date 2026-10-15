@@ -2,13 +2,17 @@
   "name": "headstrong",
   "private": true,
   "packageManager": "pnpm@9.12.3",
-  "engines": { "node": ">=20.9.0" },
+  "engines": { "node": ">=22.12.0" },
+  "pnpm": {
+    "overrides": { "fflate@0.7.3": "0.7.5" }
+  },
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
     "typecheck": "turbo typecheck",
     "lint": "biome check .",
     "verify:local": "node scripts/verify-local.mjs",
+    "verify:cloudflare": "node scripts/verify-local.mjs --cloudflare",
     "format": "biome format --write .",
     "db:migrate": "pnpm --filter @headstrong/api migrate",
     "test:learning:browser": "playwright test --config tests/learning/playwright.config.ts",

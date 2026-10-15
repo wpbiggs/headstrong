@@ -2,6 +2,10 @@
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "files": {
     "ignore": [
+      "**/worker-env.d.ts",
+      "apps/web/cloudflare/env.d.ts",
+      ".agents/**",
+      "**/.wrangler/**",
       "artifacts/local-verification/**",
       ".turbo/**",
       "**/.turbo/**",

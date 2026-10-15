@@ -1,5 +1,5 @@
 import { type LearningJourney, learningJourneySchema } from "@headstrong/core";
-import { type DatabaseClient, sql } from "../db";
+import { type DatabaseClient, getDefaultDatabase } from "../db";
 import { type QuestRepository, createQuestRepository } from "./app-repository";
 
 export interface LearningRepository {
@@ -38,7 +38,7 @@ function mapGoal(row: Record<string, unknown>): LearningJourney {
 }
 
 export function createLearningRepository(
-  client: DatabaseClient = sql,
+  client: DatabaseClient = getDefaultDatabase(),
 ): LearningRepository {
   const quests = createQuestRepository(client);
   return {

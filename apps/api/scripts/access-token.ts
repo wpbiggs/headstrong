@@ -1,7 +1,8 @@
+import "dotenv/config";
 import { roleSchema } from "@headstrong/core";
 import { z } from "zod";
 import { createSession, signSession } from "../src/auth";
-import { sql } from "../src/db";
+import { getDefaultDatabase } from "../src/db";
 import { createQuestRepository } from "../src/repositories/app-repository";
 import { createAuthRepository } from "../src/repositories/auth-repository";
 
@@ -40,4 +41,4 @@ run()
     console.error(error.message);
     process.exitCode = 1;
   })
-  .finally(() => sql.end());
+  .finally(() => getDefaultDatabase().end());

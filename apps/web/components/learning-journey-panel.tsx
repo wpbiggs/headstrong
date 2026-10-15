@@ -4,12 +4,14 @@ import {
   type LearningJourneyDetail,
   learningJourneyDetailSchema,
 } from "@headstrong/core";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { ExperiencePlayer } from "./experience-player";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export function LearningJourneyPanel() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   const [token, setToken] = useState("");
   const [goalId, setGoalId] = useState("");
   const [detail, setDetail] = useState<LearningJourneyDetail | null>(null);
@@ -114,6 +116,7 @@ export function LearningJourneyPanel() {
           Bearer token{" "}
           <input
             aria-label="Bearer token"
+            disabled={!ready}
             type="password"
             autoComplete="off"
             value={token}

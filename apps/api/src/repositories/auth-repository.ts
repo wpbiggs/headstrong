@@ -1,7 +1,9 @@
 import type { Session } from "@headstrong/core";
-import { type DatabaseClient, sql } from "../db";
+import { type DatabaseClient, getDefaultDatabase } from "../db";
 
-export function createAuthRepository(client: DatabaseClient = sql) {
+export function createAuthRepository(
+  client: DatabaseClient = getDefaultDatabase(),
+) {
   return {
     async register(session: Session, expiresAt: Date) {
       // Role/email come from the existing account, never from a bearer-token request.

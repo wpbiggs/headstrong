@@ -11,7 +11,9 @@ export default function LearnPage() {
   return (
     <main>
       <section className="hero">
-        <p className="eyebrow">Local prototype · not for real learner data</p>
+        <p className="eyebrow">
+          Synthetic-data prototype · not for real learner data
+        </p>
         <h1>Your goal, your learning journey</h1>
         <p>
           Choose an approved quest, explore, reflect, and receive educator

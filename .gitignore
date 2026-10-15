@@ -4,6 +4,12 @@ node_modules
 dist
 coverage
 artifacts/local-verification
+.wrangler/
+.vinext/
+.dev.vars*
+!.dev.vars.example
+apps/api/src/worker-env.d.ts
+apps/web/cloudflare/env.d.ts
 test-results
 playwright-report
 .openchamber/screenshots

@@ -17,7 +17,7 @@ import {
   questTaskSchema,
 } from "@headstrong/core";
 import type { DatabaseClient } from "../db";
-import { sql } from "../db";
+import { getDefaultDatabase } from "../db";
 
 export interface DbUser {
   id: string;
@@ -268,7 +268,7 @@ function toUser(row: Record<string, unknown>): DbUser {
 }
 
 export function createQuestRepository(
-  client: DatabaseClient = sql,
+  client: DatabaseClient = getDefaultDatabase(),
 ): QuestRepository {
   return {
     async transaction<T>(

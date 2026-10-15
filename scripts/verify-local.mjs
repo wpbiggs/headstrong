@@ -10,6 +10,7 @@ const artifacts = path.join(root, "artifacts/local-verification");
 const checks = [];
 const servers = [];
 const startedAt = new Date().toISOString();
+const cloudflare = process.argv.includes("--cloudflare");
 const environment = {
   ...process.env,
   TEST_DATABASE_ADMIN_URL:
@@ -58,7 +59,13 @@ async function run(name, args, capture = false) {
     durationMs: Date.now() - start,
   });
   if (capture)
-    await writeFile(path.join(artifacts, "security-audit.json"), output);
+    await writeFile(
+      path.join(
+        artifacts,
+        typeof capture === "string" ? capture : "security-audit.json",
+      ),
+      output,
+    );
   return code;
 }
 
@@ -81,7 +88,11 @@ function startServer(args) {
     cwd: root,
     env: {
       ...environment,
-      NODE_ENV: args.includes("test:learning:serve") ? "test" : "production",
+      NODE_ENV: args.includes("test:learning:serve")
+        ? "test"
+        : args.includes("dev:vinext:fixture")
+          ? "development"
+          : "production",
     },
     stdio: "inherit",
     detached: true,
@@ -134,6 +145,43 @@ try {
   await ensurePortFree(4000);
   await run("Lint", ["lint"]);
   await run("Type checking", ["typecheck"]);
+  if (cloudflare) {
+    await run("API Worker binding types", [
+      "--filter",
+      "@headstrong/api",
+      "typecheck:cloudflare",
+    ]);
+    await run("Web Worker binding types", [
+      "--filter",
+      "@headstrong/web",
+      "typecheck:cloudflare",
+    ]);
+    await run("Access and gateway security tests", [
+      "--filter",
+      "@headstrong/api",
+      "test:cloudflare",
+    ]);
+    await run("API Worker packaging (no upload)", [
+      "--filter",
+      "@headstrong/api",
+      "check:cloudflare",
+    ]);
+    await run("Cloudflare frontend build", [
+      "--filter",
+      "@headstrong/web",
+      "build:cloudflare",
+    ]);
+    await run("Web Worker packaging (no upload)", [
+      "--filter",
+      "@headstrong/web",
+      "check:cloudflare",
+    ]);
+    await run("Built web Worker access gate in workerd", [
+      "--filter",
+      "@headstrong/api",
+      "test:cloudflare:runtime",
+    ]);
+  }
   await run("Unit and scaffold tests", ["test"]);
   await run("Additional ledger/LMS tests", [
     "--filter",
@@ -171,6 +219,23 @@ try {
     ]);
     await ready("http://127.0.0.1:3000/learn", web);
     await run("Browser acceptance", ["test:learning:browser"]);
+    if (cloudflare) {
+      await stopServers();
+      servers.length = 0;
+      const fixture = startServer([
+        "--filter",
+        "@headstrong/api",
+        "test:learning:serve",
+      ]);
+      await ready("http://127.0.0.1:4000/__fixture", fixture);
+      const vinext = startServer([
+        "--filter",
+        "@headstrong/web",
+        "dev:vinext:fixture",
+      ]);
+      await ready("http://127.0.0.1:3000/learn", vinext);
+      await run("vinext browser compatibility", ["test:learning:browser"]);
+    }
   } else {
     checks.push({
       name: "Browser acceptance",
@@ -184,6 +249,12 @@ try {
     ["audit", "--prod", "--json"],
     true,
   );
+  if (cloudflare)
+    await run(
+      "Complete toolchain dependency advisory audit",
+      ["audit", "--json"],
+      "security-toolchain-audit.json",
+    );
 } catch (error) {
   checks.push({
     name: "Verification harness",

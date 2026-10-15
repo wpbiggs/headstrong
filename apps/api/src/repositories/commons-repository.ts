@@ -6,7 +6,7 @@ import {
   curriculumAssetSchema,
 } from "@headstrong/core";
 import type { DatabaseClient } from "../db";
-import { sql } from "../db";
+import { getDefaultDatabase } from "../db";
 
 function mapAsset(row: Record<string, unknown>) {
   return curriculumAssetSchema.parse({
@@ -89,7 +89,7 @@ export interface CommonsRepository {
 }
 
 export function createCommonsRepository(
-  client: DatabaseClient = sql,
+  client: DatabaseClient = getDefaultDatabase(),
 ): CommonsRepository {
   return {
     async createAsset(input) {

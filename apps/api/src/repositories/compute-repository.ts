@@ -5,7 +5,7 @@ import {
   computeJobSchema,
 } from "@headstrong/core";
 import type { DatabaseClient } from "../db";
-import { sql } from "../db";
+import { getDefaultDatabase } from "../db";
 
 function mapJob(row: Record<string, unknown>) {
   return computeJobSchema.parse({
@@ -95,7 +95,7 @@ export interface ComputeRepository {
 }
 
 export function createComputeRepository(
-  client: DatabaseClient = sql,
+  client: DatabaseClient = getDefaultDatabase(),
 ): ComputeRepository {
   return {
     async createJob(input) {

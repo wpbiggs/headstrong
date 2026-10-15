@@ -8,7 +8,7 @@ import {
 } from "@headstrong/core";
 import { summarizeCampaignTotals } from "@headstrong/ledger";
 import type { DatabaseClient } from "../db";
-import { sql } from "../db";
+import { getDefaultDatabase } from "../db";
 
 interface StoredLedgerTransaction {
   id: string;
@@ -108,7 +108,7 @@ function decodeCursor(cursor?: string) {
 }
 
 export function createCampaignRepository(
-  client: DatabaseClient = sql,
+  client: DatabaseClient = getDefaultDatabase(),
 ): CampaignRepository {
   return {
     async createCampaign(input) {
