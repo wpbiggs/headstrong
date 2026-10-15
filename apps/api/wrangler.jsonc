@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "headstrong-preview-api",
+  "account_id": "b7019b91654de6e62fb986cd0864cba2",
   "main": "src/worker.ts",
   "compatibility_date": "2026-10-14",
   "compatibility_flags": ["nodejs_compat"],
