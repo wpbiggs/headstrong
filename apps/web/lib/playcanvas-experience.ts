@@ -15,19 +15,30 @@ export async function mountPlayCanvasExperience(
     app.setCanvasResolution(pc.RESOLUTION_AUTO);
     const camera = new pc.Entity("camera");
     camera.addComponent("camera", {
-      clearColor: new pc.Color(0.06, 0.09, 0.16),
+      clearColor: new pc.Color(0.9, 0.92, 0.86),
     });
-    camera.setPosition(0, 3, 8);
-    camera.lookAt(0, 1, -1);
+    const fractions = spec.scene.templateId === "fraction-blocks";
+    camera.setPosition(fractions ? 5 : 0, fractions ? 6 : 3, fractions ? 8 : 8);
+    camera.lookAt(0, 0.3, fractions ? 0 : -1);
     app.root.addChild(camera);
     const light = new pc.Entity("light");
     light.addComponent("light", { type: "directional", intensity: 1.5 });
     light.setEulerAngles(45, 30, 0);
     app.root.addChild(light);
-    app.scene.ambientLight = new pc.Color(0.5, 0.5, 0.5);
+    app.scene.ambientLight = new pc.Color(0.7, 0.72, 0.65);
 
     const entities = new Map<string, InstanceType<typeof pc.Entity>>();
     const materials: InstanceType<typeof pc.StandardMaterial>[] = [];
+    const floor = new pc.Entity("Exploration stage");
+    floor.addComponent("render", { type: "box" });
+    floor.setLocalScale(9, 0.12, 7);
+    floor.setPosition(0, -0.18, 0);
+    const floorMaterial = new pc.StandardMaterial();
+    floorMaterial.diffuse = new pc.Color(0.77, 0.82, 0.7);
+    floorMaterial.update();
+    if (floor.render) floor.render.material = floorMaterial;
+    materials.push(floorMaterial);
+    app.root.addChild(floor);
     for (const [index, item] of spec.scene.entities.entries()) {
       const entity = new pc.Entity(item.label);
       entity.addComponent("render", { type: "box" });
@@ -38,8 +49,26 @@ export async function mountPlayCanvasExperience(
         0.5,
         -Math.floor(index / 6) * 1.5,
       );
+      if (fractions) {
+        const row = index === 0 ? 0 : index < 3 ? 1 : 2;
+        const count = 2 ** row;
+        const column = index - (row === 0 ? 0 : row === 1 ? 1 : 3);
+        entity.setLocalScale(4.6 / count, 0.7, 0.9);
+        entity.setPosition(
+          (column - (count - 1) / 2) * (4.6 / count + 0.06),
+          0.3,
+          (row - 1) * 1.55,
+        );
+      }
       const material = new pc.StandardMaterial();
-      material.diffuse = new pc.Color(0.2, 0.55, 0.95);
+      const color = fractions
+        ? index === 0
+          ? [0.79, 0.47, 0.28]
+          : index < 3
+            ? [0.91, 0.76, 0.49]
+            : [0.28, 0.53, 0.43]
+        : [0.28, 0.53, 0.43];
+      material.diffuse = new pc.Color(...color);
       material.update();
       if (entity.render) entity.render.material = material;
       materials.push(material);
@@ -49,7 +78,7 @@ export async function mountPlayCanvasExperience(
     function highlight(id: string) {
       const material = entities.get(id)?.render?.material;
       if (material instanceof pc.StandardMaterial) {
-        material.diffuse = new pc.Color(0.2, 0.85, 0.45);
+        material.diffuse = new pc.Color(0.63, 0.73, 0.37);
         material.update();
       }
     }

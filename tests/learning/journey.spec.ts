@@ -11,6 +11,7 @@ test("learner goal through PlayCanvas, evidence, educator feedback and satisfact
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/learn");
+  await page.getByRole("button", { name: /Connect saved workspace/ }).click();
   await page
     .getByLabel("Bearer token", { exact: true })
     .fill(fixture.tokens.learner);
@@ -167,6 +168,7 @@ test("WebGL failure is explicit and keyboard alternative remains usable", async 
       null) as typeof HTMLCanvasElement.prototype.getContext;
   });
   await page.goto("/learn");
+  await page.getByRole("button", { name: /Connect saved workspace/ }).click();
   await page
     .getByLabel("Bearer token", { exact: true })
     .fill(fixture.tokens.learner);

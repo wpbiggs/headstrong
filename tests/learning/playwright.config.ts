@@ -2,7 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: ".",
-  testMatch: "journey.spec.ts",
+  testMatch: ["journey.spec.ts", "studio.spec.ts"],
   workers: 1,
   reporter: "list",
   use: {

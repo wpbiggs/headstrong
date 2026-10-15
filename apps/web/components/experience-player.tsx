@@ -7,9 +7,13 @@ import { mountPlayCanvasExperience } from "../lib/playcanvas-experience";
 export function ExperiencePlayer({
   spec,
   onObserve,
+  initialObserved = [],
+  localOnly = false,
 }: {
   spec: ExperienceSpec;
   onObserve: (id: string) => void;
+  initialObserved?: string[];
+  localOnly?: boolean;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const adapter = useRef<Awaited<
@@ -18,7 +22,8 @@ export function ExperiencePlayer({
   const callback = useRef(onObserve);
   callback.current = onObserve;
   const [status, setStatus] = useState("Loading PlayCanvas…");
-  const [observed, setObserved] = useState<string[]>([]);
+  const [observed, setObserved] = useState<string[]>(initialObserved);
+  const initial = useRef(initialObserved);
 
   function observe(id: string) {
     setObserved((ids) => (ids.includes(id) ? ids : [...ids, id]));
@@ -42,6 +47,7 @@ export function ExperiencePlayer({
           }
           mounted = instance;
           adapter.current = instance;
+          for (const id of initial.current) instance.highlight(id);
           setStatus(
             "PlayCanvas ready — select a block or use the inspection buttons.",
           );
@@ -61,11 +67,17 @@ export function ExperiencePlayer({
   }, [spec]);
 
   return (
-    <section className="card">
-      <h2>{spec.scene.title}</h2>
+    <section className="card experience-player">
+      <div className="player-heading">
+        <h2>{spec.scene.title}</h2>
+        <span className="player-live">INTERACTIVE EXPLORATION</span>
+      </div>
       <p>{spec.objective}</p>
       <output>{status}</output>
-      <div style={{ width: "100%", height: 360, overflow: "hidden" }}>
+      <div
+        className="player-canvas-wrap"
+        style={{ width: "100%", height: 360, overflow: "hidden" }}
+      >
         <canvas
           ref={canvas}
           aria-label="Interactive learning scene; equivalent inspection controls follow"
@@ -73,7 +85,7 @@ export function ExperiencePlayer({
         />
       </div>
       <p>{spec.scene.summary}</p>
-      <ul>
+      <ul className="inspection-controls">
         {spec.scene.entities.map((entity) => (
           <li key={entity.id}>
             <button
@@ -87,14 +99,15 @@ export function ExperiencePlayer({
           </li>
         ))}
       </ul>
-      <ul>
+      <ul className="inspection-prompts">
         {spec.scene.interactions.map((interaction) => (
           <li key={interaction.id}>{interaction.prompt}</li>
         ))}
       </ul>
-      <p>
-        These are template blocks, not imported assets. Observations are
-        self-reported; your educator reviews your reflection.
+      <p className="player-disclaimer">
+        {localOnly
+          ? "A local sample built from template blocks. Inspecting pieces is not an assessment; no reflection is sent to an educator."
+          : "These are template blocks, not imported assets. Observations are self-reported; your educator reviews your reflection."}
       </p>
     </section>
   );
