@@ -35,15 +35,16 @@ const demoFeed = {
 };
 
 export default async function FeedPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     email?: string;
     role?: "student" | "parent" | "educator" | "admin";
     cursor?: string;
     topic?: string;
-  };
+  }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const data =
     searchParams.email && searchParams.role
       ? await fetchFeedLive({

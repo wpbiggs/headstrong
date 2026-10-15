@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "headstrong-preview-api",
+  "account_id": "b7019b91654de6e62fb986cd0864cba2",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-10-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "vars": { "PREVIEW_SYNTHETIC_DATA_ONLY": "true" },
+  "secrets": { "required": ["JWT_SECRET"] },
+  "hyperdrive": [
+    { "binding": "HYPERDRIVE", "id": "6d3d54166e67405a881e082339413cb3" }
+  ],
+  "ratelimits": [
+    {
+      "name": "API_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 60, "period": 60 }
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "invocation_logs": false },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  }
+}

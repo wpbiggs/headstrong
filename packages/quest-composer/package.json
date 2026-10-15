@@ -13,9 +13,9 @@
     "@headstrong/core": "workspace:*",
     "@headstrong/moderation": "workspace:*",
     "@headstrong/scene-planner": "workspace:*",
-    "zod": "^3.23.8"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/node": "^22.8.1"
+    "@types/node": "^22.20.5"
   }
 }

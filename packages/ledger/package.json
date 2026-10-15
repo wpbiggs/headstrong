@@ -13,6 +13,6 @@
     "@headstrong/core": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.8.1"
+    "@types/node": "^22.20.5"
   }
 }

@@ -27,8 +27,9 @@ const demoQueue = {
 };
 
 export default async function ParentApprovalsPage({
-  searchParams,
-}: { searchParams: { email?: string; role?: "parent" | "admin" } }) {
+  searchParams: searchParamsPromise,
+}: { searchParams: Promise<{ email?: string; role?: "parent" | "admin" }> }) {
+  const searchParams = await searchParamsPromise;
   const data =
     searchParams.email && searchParams.role
       ? await fetchParentApprovalQueueLive({

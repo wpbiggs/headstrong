@@ -6,6 +6,8 @@ export * from "./quest";
 
 import { z } from "zod";
 import { roleSchema } from "./auth/roles";
+import type { portfolioArtifactSchema } from "./contracts/portfolio";
+export { portfolioArtifactSchema } from "./contracts/portfolio";
 import {
   type educatorSchema,
   type parentSchema,
@@ -24,14 +26,6 @@ export const lessonSchema = z.object({
   title: z.string().min(1),
   objective: z.string().min(1),
   recommendedAssets: z.array(z.string()).default([]),
-});
-
-export const portfolioArtifactSchema = z.object({
-  id: z.string().uuid(),
-  questId: z.string().uuid(),
-  kind: z.enum(["text", "image", "video", "scene", "link"]),
-  url: z.string().url(),
-  submittedAt: z.string().datetime(),
 });
 
 export const masterySignalSchema = z.object({

@@ -17,7 +17,7 @@ import {
   questTaskSchema,
 } from "@headstrong/core";
 import type { DatabaseClient } from "../db";
-import { sql } from "../db";
+import { getDefaultDatabase } from "../db";
 
 export interface DbUser {
   id: string;
@@ -268,7 +268,7 @@ function toUser(row: Record<string, unknown>): DbUser {
 }
 
 export function createQuestRepository(
-  client: DatabaseClient = sql,
+  client: DatabaseClient = getDefaultDatabase(),
 ): QuestRepository {
   return {
     async transaction<T>(
@@ -488,7 +488,7 @@ export function createQuestRepository(
           ${input.studentId},
           ${input.name},
           ${input.summary},
-          ${JSON.stringify(input.moderation)}::jsonb,
+          ${JSON.stringify(input.moderation)}::text::jsonb,
           ${input.needsEducatorReview},
           ${input.currentState},
           ${input.parentId},
@@ -527,7 +527,7 @@ export function createQuestRepository(
             ${task.summary},
             ${task.contentRef},
             ${task.templateId},
-            ${JSON.stringify(task.scenePlan)}::jsonb,
+            ${JSON.stringify(task.scenePlan)}::text::jsonb,
             ${task.position},
             ${task.estimatedMinutes}
           )
@@ -554,7 +554,7 @@ export function createQuestRepository(
           ${input.type},
           ${input.performedByUserId},
           ${input.performedByRole},
-          ${JSON.stringify(input.metadata)}::jsonb
+          ${JSON.stringify(input.metadata)}::text::jsonb
         )
         returning *
       `;
@@ -676,7 +676,7 @@ export function createQuestRepository(
           ${input.action},
           ${input.entityType},
           ${input.entityId},
-          ${JSON.stringify(input.payload)}::jsonb
+          ${JSON.stringify(input.payload)}::text::jsonb
         )
       `;
     },

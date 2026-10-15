@@ -4,7 +4,12 @@ import type { ComputeJob } from "@headstrong/core";
 import type { ComputeRepository } from "../repositories/compute-repository";
 import { createComputeWorkerService } from "./compute-worker-service";
 
-type ComputeEventType = "queued" | "started" | "succeeded" | "failed" | "retry_scheduled";
+type ComputeEventType =
+  | "queued"
+  | "started"
+  | "succeeded"
+  | "failed"
+  | "retry_scheduled";
 
 interface ComputeLedgerWriterStub {
   createLedgerTransaction(input: { reference: string }): Promise<void>;
