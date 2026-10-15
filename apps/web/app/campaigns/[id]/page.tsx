@@ -56,15 +56,17 @@ const demoHistory = {
 };
 
 export default async function CampaignDetailPage({
-  params,
-  searchParams,
+  params: paramsPromise,
+  searchParams: searchParamsPromise,
 }: {
-  params: { id: string };
-  searchParams: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{
     email?: string;
     role?: "admin" | "educator" | "parent" | "expert";
-  };
+  }>;
 }) {
+  const params = await paramsPromise;
+  const searchParams = await searchParamsPromise;
   const detail =
     searchParams.email && searchParams.role
       ? await fetchCampaignDetailLive({

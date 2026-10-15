@@ -24,7 +24,7 @@ a blanket private-record reader. Inputs/outputs are Zod contracts in `packages/c
 
 Use a disposable loopback PostgreSQL database. **Do not run the legacy migration runner
 on a real database**; see migration audit. The integration script below creates a unique
-database and applies the existing quest prerequisites and new migration only.
+database and now applies the entire tracked migration history.
 
 API environment: normal fixture values plus `API_HOST=127.0.0.1`,
 `ENABLE_LEARNING_JOURNEYS=true`, `NODE_ENV=development`.

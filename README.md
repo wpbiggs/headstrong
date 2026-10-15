@@ -1,5 +1,16 @@
 # Headstrong
 
+## Local verification (no CI required)
+
+Run `pnpm verify:local` for local tests, full disposable-database migration checks, build,
+browser acceptance and dependency auditing. It requires local PostgreSQL and Chrome or
+Playwright Chromium; it never migrates the existing application database. Failures are
+recorded in `artifacts/local-verification/report.json` and produce a nonzero exit code.
+
+Public email/role login is removed. For local operator-issued credentials, migration
+baselining instructions and known compatibility limits, see
+[`docs/evolution/local-hardening.md`](docs/evolution/local-hardening.md).
+
 Minimal Phase 0 monorepo scaffold for Headstrong and FibonaccNet.
 
 ## Workspace

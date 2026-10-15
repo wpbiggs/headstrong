@@ -4,6 +4,7 @@ import postgres from "postgres";
 import { createSession, signSession } from "../src/auth";
 import type { DatabaseClient } from "../src/db";
 import { createQuestRepository } from "../src/repositories/app-repository";
+import { createAuthRepository } from "../src/repositories/auth-repository";
 import { createQuestService } from "../src/services/quest-service";
 
 export async function seedLearningFixture(client: DatabaseClient) {
@@ -42,7 +43,11 @@ export async function seedLearningFixture(client: DatabaseClient) {
   const tokens = Object.fromEntries(
     await Promise.all(
       Object.entries(sessions).map(
-        async ([key, session]) => [key, await signSession(session)] as const,
+        async ([key, session]) =>
+          [
+            key,
+            await signSession(session, createAuthRepository(client)),
+          ] as const,
       ),
     ),
   );

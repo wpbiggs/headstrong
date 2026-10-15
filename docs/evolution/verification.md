@@ -1,5 +1,8 @@
 # Test and security verification report — 2026-10-14
 
+This records the initial prototype verification. Subsequent local-first hardening and
+updated verification results are recorded in `local-hardening.md` and the local harness report.
+
 ## Result
 
 Local prototype verified. **Not production-ready, not a complete education platform, and

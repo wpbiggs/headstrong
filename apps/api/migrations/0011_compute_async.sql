@@ -7,6 +7,8 @@ add column if not exists last_error text;
 alter table compute_jobs
 drop constraint if exists compute_jobs_status_check;
 
+update compute_jobs set status = 'succeeded' where status = 'validated';
+
 alter table compute_jobs
 add constraint compute_jobs_status_check
 check (status in ('queued', 'running', 'succeeded', 'failed'));

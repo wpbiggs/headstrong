@@ -1,13 +1,23 @@
 alter table discovery_posts
 add column if not exists state text;
 
-update discovery_posts
-set state = case
-  when status = 'approved' then 'live'
-  when status = 'pending_parent_approval' then 'pending_parent_approval'
-  else 'draft'
-end
-where state is null;
+-- Support both the historical status schema and fresh 0005's state schema.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'discovery_posts' and column_name = 'status'
+  ) then
+    execute $sql$
+      update discovery_posts set state = case
+        when status = 'approved' then 'live'
+        when status = 'pending_parent_approval' then 'pending_parent_approval'
+        else 'draft' end where state is null
+    $sql$;
+  else
+    update discovery_posts set state = 'draft' where state is null;
+  end if;
+end $$;
 
 alter table discovery_posts
 alter column state set not null;

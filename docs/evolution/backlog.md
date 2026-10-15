@@ -1,5 +1,9 @@
 # Prioritized implementation backlog
 
+Completed local hardening is recorded in `local-hardening.md`: full migration bootstrap,
+tracked/transactional upgrades, operator-issued revocable credentials, disabled insecure
+login/LTI handoff, dependency remediation and a CI-independent verification command.
+
 ## Prototype acceptance
 
 - [x] Learner creates a private goal, then selects an existing approved quest.
@@ -28,7 +32,7 @@
 4. Cohort-threshold satisfaction aggregates and opt-out/retention policy, never grade input.
 5. Richer curated PlayCanvas templates, accessibility audit, content validation and mobile
    GPU/performance budgets. Full XR is a separate opt-in project.
-6. CI PostgreSQL migration/route tests and browser tests on supported runners.
+6. Maintain repeatable local PostgreSQL/route/browser verification; CI is optional.
 
 ## P2 — Existing platform hardening (separate changes)
 

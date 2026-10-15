@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { verifySession } from "../src/auth";
+import { createRequireAuth } from "../src/middleware/auth";
+import { runMigrations } from "../src/migrations";
+import { createAuthRepository } from "../src/repositories/auth-repository";
 import { createLearningRepository } from "../src/repositories/learning-repository";
 import { createLearningRoutes } from "../src/routes/learning";
 import { createLearningService } from "../src/services/learning-service";
@@ -12,36 +16,19 @@ import {
 test("PostgreSQL + Hono learning journey: scoped, ordered, atomic and immutable", async (t) => {
   const db = await createDisposableDatabase();
   t.after(() => db.cleanup());
-  const migrationConnection = await db.client.reserve();
-  try {
-    for (const file of [
-      "0001_init.sql",
-      "0002_phase1_quests.sql",
-      "0003_quest_moderation.sql",
-      "0004_quest_review_and_scene_plan.sql",
-      "0012_learning_journeys.sql",
-    ]) {
-      await migrationConnection.unsafe(
-        await readFile(
-          new URL(`../migrations/${file}`, import.meta.url),
-          "utf8",
-        ),
-      );
-    }
-    // New migration is independently repeatable and doesn't modify legacy data.
-    await migrationConnection.unsafe(
-      await readFile(
-        new URL("../migrations/0012_learning_journeys.sql", import.meta.url),
-        "utf8",
-      ),
-    );
-  } finally {
-    migrationConnection.release();
-  }
+  const directory = fileURLToPath(new URL("../migrations", import.meta.url));
+  assert.equal((await runMigrations(db.client, directory)).applied.length, 14);
+  assert.deepEqual((await runMigrations(db.client, directory)).applied, []);
   const fixture = await seedLearningFixture(db.client);
   const repository = createLearningRepository(db.client);
   const service = createLearningService(repository);
-  const routes = createLearningRoutes(service, () => true);
+  const routes = createLearningRoutes(
+    service,
+    () => true,
+    createRequireAuth((token) =>
+      verifySession(token, createAuthRepository(db.client)),
+    ),
+  );
   async function request(actor: string, path: string, body?: unknown) {
     return routes.request(path, {
       method: body === undefined ? "GET" : "POST",
@@ -275,33 +262,16 @@ test("PostgreSQL + Hono learning journey: scoped, ordered, atomic and immutable"
     },
   );
   await t.test(
-    "confirm legacy migration blockers instead of hiding them",
+    "full bootstrap repairs legacy event constraint and session revocation is immediate",
     async () => {
-      await db.client.unsafe(
-        await readFile(
-          new URL("../migrations/0005_internal_social.sql", import.meta.url),
-          "utf8",
-        ),
-      );
-      await assert.rejects(
-        db.client.unsafe(
-          await readFile(
-            new URL(
-              "../migrations/0006_social_governance.sql",
-              import.meta.url,
-            ),
-            "utf8",
-          ),
-        ),
-        /column "status" does not exist/,
-      );
-      await assert.rejects(
-        db.client`
+      await db.client`
       insert into quest_events (quest_id, type, performed_by_user_id, performed_by_role)
       values (${fixture.questId}, 'educator_reviewed', ${fixture.users.educator.id}, 'educator')
-    `,
-        /quest_events_type_check/,
+    `;
+      await createAuthRepository(db.client).revoke(
+        fixture.sessions.learner.sessionId,
       );
+      assert.equal((await request("learner", path)).status, 401);
     },
   );
 });

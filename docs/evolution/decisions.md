@@ -2,6 +2,9 @@
 
 Status: accepted for local prototype; production rollout requires separate review.
 
+Subsequent authentication, migration and dependency changes are recorded in
+`local-hardening.md`. Local verification is the required check path; CI is optional.
+
 ## ADR-001 — Learner agency and pathways
 
 Persist a learner-owned goal before choosing a quest. For the minimal slice, select an

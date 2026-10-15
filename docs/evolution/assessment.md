@@ -1,5 +1,8 @@
 # Repository assessment — 2026-10-14
 
+Historical audit baseline. See `local-hardening.md` for subsequent migration repairs,
+removal of public email/role login and disabling of unverified LTI credential issuance.
+
 Scope: tracked workspace inventory, all 11 SQL migrations, API routes/services/repositories,
 shared contracts/packages, web routes/components, configuration, tests and CI. This is a
 source review and local prototype validation, not a penetration test or a production audit.

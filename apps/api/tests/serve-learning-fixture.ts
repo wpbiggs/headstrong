@@ -1,7 +1,11 @@
-import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { verifySession } from "../src/auth";
+import { createRequireAuth } from "../src/middleware/auth";
+import { runMigrations } from "../src/migrations";
+import { createAuthRepository } from "../src/repositories/auth-repository";
 import { createLearningRepository } from "../src/repositories/learning-repository";
 import { createLearningRoutes } from "../src/routes/learning";
 import { createLearningService } from "../src/services/learning-service";
@@ -13,25 +17,10 @@ import {
 // Test-only server: fixture identities are intentionally public on loopback, never mounted in app.
 const db = await createDisposableDatabase();
 try {
-  const connection = await db.client.reserve();
-  try {
-    for (const file of [
-      "0001_init.sql",
-      "0002_phase1_quests.sql",
-      "0003_quest_moderation.sql",
-      "0004_quest_review_and_scene_plan.sql",
-      "0012_learning_journeys.sql",
-    ]) {
-      await connection.unsafe(
-        await readFile(
-          new URL(`../migrations/${file}`, import.meta.url),
-          "utf8",
-        ),
-      );
-    }
-  } finally {
-    connection.release();
-  }
+  await runMigrations(
+    db.client,
+    fileURLToPath(new URL("../migrations", import.meta.url)),
+  );
   const fixture = await seedLearningFixture(db.client);
   const app = new Hono();
   app.use(
@@ -42,6 +31,10 @@ try {
     "/learning",
     createLearningRoutes(
       createLearningService(createLearningRepository(db.client)),
+      undefined,
+      createRequireAuth((token) =>
+        verifySession(token, createAuthRepository(db.client)),
+      ),
     ),
   );
   app.get("/__fixture", (c) =>

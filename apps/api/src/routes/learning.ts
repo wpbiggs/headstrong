@@ -20,6 +20,7 @@ import {
 export function createLearningRoutes(
   service = createLearningService(),
   enabled: () => boolean = learningJourneysEnabled,
+  authenticate = requireAuth,
 ) {
   const app = new Hono<{ Variables: AppVariables }>();
   app.use("*", async (c, next) => {
@@ -36,7 +37,7 @@ export function createLearningRoutes(
       onError: (c) => c.json({ error: "Request body too large." }, 413),
     }),
   );
-  app.use("*", requireAuth);
+  app.use("*", authenticate);
   app.onError((error, c) => {
     if (error instanceof LearningError)
       return c.json({ error: error.message }, error.status);

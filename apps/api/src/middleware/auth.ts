@@ -11,23 +11,29 @@ export function getAuthenticatedUser(session: Session) {
   return session;
 }
 
-export const requireAuth: MiddlewareHandler<{ Variables: AppVariables }> =
-  factory.createMiddleware(async (c, next) => {
+export function createRequireAuth(
+  verify: (token: string) => Promise<Session> = verifySession,
+): MiddlewareHandler<{ Variables: AppVariables }> {
+  return factory.createMiddleware(async (c, next) => {
     const authorization = c.req.header("authorization");
 
     if (!authorization?.startsWith("Bearer ")) {
       return c.json({ error: "Missing bearer token." }, 401);
     }
 
+    let session: Session;
     try {
       const token = authorization.slice("Bearer ".length);
-      const session = await verifySession(token);
-      c.set("user", getAuthenticatedUser(session));
-      await next();
+      session = await verify(token);
     } catch {
       return c.json({ error: "Invalid session." }, 401);
     }
+    c.set("user", getAuthenticatedUser(session));
+    await next();
   });
+}
+
+export const requireAuth = createRequireAuth();
 
 export function requireRole(...roles: Session["role"][]) {
   return factory.createMiddleware(async (c, next) => {

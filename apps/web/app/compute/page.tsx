@@ -21,8 +21,9 @@ const demoJobs = {
 };
 
 export default async function ComputePage({
-  searchParams,
-}: { searchParams: { email?: string } }) {
+  searchParams: searchParamsPromise,
+}: { searchParams: Promise<{ email?: string }> }) {
+  const searchParams = await searchParamsPromise;
   const jobs = searchParams.email
     ? await fetchComputeJobsLive({
         email: searchParams.email,

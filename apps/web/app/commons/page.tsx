@@ -33,8 +33,9 @@ const demoAssets = {
 };
 
 export default async function CommonsPage({
-  searchParams,
-}: { searchParams: { subject?: string; tag?: string } }) {
+  searchParams: searchParamsPromise,
+}: { searchParams: Promise<{ subject?: string; tag?: string }> }) {
+  const searchParams = await searchParamsPromise;
   const data = await fetchCommonsAssetsLive({
     subject: searchParams.subject,
     tag: searchParams.tag,
