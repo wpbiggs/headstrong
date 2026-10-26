@@ -1,6 +1,38 @@
 # Headstrong / Curiosityverse — End Goal and Agent Implementation Plan
-Status: proposed, review required | Date: 2026-10-15 | Owner: Headstrong
+Status: proposed, review required | Draft: 2026-10-15 | Reconciled: 2026-10-26 | Owner: Headstrong
 Canonical repository: wpbiggs/headstrong. This document is a product destination and staged delivery contract, not an assertion that Roblox gameplay is implemented.
+
+## Reconciliation with PR #1 — review before execution
+
+[PR #1](https://github.com/wpbiggs/headstrong/pull/1) is a candidate implementation
+foundation; this PR is proposed product direction. Neither has been merged. Their
+original heads (`21302c9` and `963d207`) combine without text conflicts in a non-mutating
+merge-tree check, but that does not constitute product or security approval.
+
+- The goal → quest → evidence workflow in #1 is an optional **connected record** path,
+  not a requirement to make a child fill out a dashboard before playing The Awakening.
+  The new studio is a local sample/workbench, not the flagship adventure.
+- #1 implements PlayCanvas, not Roblox. Roblox remains a proposed runtime: verify
+  tool availability and compare the smallest interaction prototypes before making a
+  flagship engine decision. Do not recreate core auth, evidence services or contracts.
+- October 26 clean-checkout verification of #1 code at `e912cf7` passed all 15
+  functional checks, including four browser tests on each renderer. Both dependency
+  audits failed: high runtime Zod advisory `GHSA-mrhx-c7xc-m3w5`, plus toolchain findings
+  in undici and fast-uri (eight total). These are not waived by the earlier build-tool
+  risk acceptance. No blanket source/security sign-off is claimed.
+- The older private synthetic preview is deployed; the redesigned studio is source/local
+  only. No real child playtest, Roblox Studio verification or game-fun evidence exists.
+- This PR's CI job executed no steps because the GitHub account is billing-locked,
+  per its check annotation. It is not a documentation test failure or a passed run.
+  CI remains optional. No billing changes or automatic retry is required.
+
+Keep these PRs separate. Review the direction here first, review/remediate #1's
+dependency and compatibility risks, and obtain explicit approval before merging either.
+A docs merge would record direction only, not authorize engine work, publishing or
+child testing. Then reevaluate the smallest **playable adventure**, not another
+dashboard increment. The complementary review record is
+[`docs/evolution/pr-reconciliation.md` on the #1 branch](https://github.com/wpbiggs/headstrong/blob/feat/learner-experience-vertical-slice/docs/evolution/pr-reconciliation.md);
+it is not present on this docs-only branch until both contributions are integrated.
 
 ## North Star
 Build a beautiful, safe, child-directed universe in which curiosity launches adventures, discoveries provide useful knowledge, experimentation builds capabilities, creativity changes the world, and contributions visibly help others. Children should want to play *before* they recognize they are learning. A player can eventually progress from adventurer to creator of curated experiences for other children.
@@ -39,14 +71,14 @@ Quality bar: visually identifiable world, expressive feedback, immediate moment 
 ## Existing repository inventory (reviewed 2026-10-15)
 Main contains Next.js web, Hono API, PostgreSQL migrations, Zod core contracts, quest/scene contracts, deterministic template scene planner, approval/moderation, LMS, social/commons, compute and other adjacent scaffolds. `packages/core/src/contracts/scene.ts` defines bounded ScenePlan v1; `packages/scene-planner/src/index.ts` is a stub template selector; `README.md` is dated (Phase 0 scaffold).
 
-An **OPEN DRAFT, UNMERGED PR #1**, `feat/learner-experience-vertical-slice`, adds engine-neutral `packages/core/src/contracts/experience.ts` (ExperienceSpec v1 wraps ScenePlan + quest/task/objective), PlayCanvas local rendering, learner goal → approved quest → private evidence → educator feedback → optional satisfaction, and important database/auth/dependency hardening. It documents local `pnpm verify:local` passing; these are PR-author local claims, not tests rerun for this plan. Review security changes and PR diff before merge. The PR is not Roblox, not production safeguarding, not verified LMS or full XR.
+An **OPEN DRAFT, UNMERGED PR #1**, `feat/learner-experience-vertical-slice`, adds engine-neutral `packages/core/src/contracts/experience.ts` (ExperienceSpec v1 wraps ScenePlan + quest/task/objective), PlayCanvas rendering, learner goal → approved quest → private evidence → educator feedback → optional satisfaction, and important database/auth hardening. It now also contains private Cloudflare/Supabase dev setup and a redesigned local-only fraction sample studio. See the dated reconciliation above for freshly rerun functional results and the non-green dependency audits; older all-green audit claims are historical. Review security changes and PR diff before merge. The PR is not Roblox, not production safeguarding, not verified LMS or full XR.
 
 **Reconciliation rule:** do not reinvent ExperienceSpec, learning services or auth. Use PR #1 as the candidate foundation after human code/security review; preserve its engine-neutral contract, add versioned backward-compatible gameplay metadata only after reviewing test impacts. Keep Roblox as an adapter and PlayCanvas as another runtime. Avoid coupling world logic to legacy ledger, social or compute services.
 
 ## Target technical architecture
 - **Core:** `packages/core` = versioned ExperienceSpec/ScenePlan, safety/accessibility, interactions, objectives and event schemas. Make a v2 only if v1 cannot express portable gameplay, with explicit migration and fixture tests.
 - **Content authoring:** educator-approved deterministic or AI-assisted *offline* design proposals; human publishing gate; no child-facing generative chat.
-- **Runtimes:** `apps/roblox` or `packages/runtime-roblox` with Luau code in source control (Rojo project tooling only if verified and justified), automated source-to-place sync or Studio MCP-assisted generation. `apps/web` PlayCanvas adapter remains separate.
+- **Runtimes (proposed):** if Roblox is selected, `apps/roblox` or `packages/runtime-roblox` with Luau code in source control (Rojo project tooling only if verified and justified), automated source-to-place sync or Studio MCP-assisted generation. `apps/web` PlayCanvas adapter remains separate. No Roblox tooling is claimed installed or verified; selecting a runtime remains a Gate 0 decision.
 - **Roblox client/server:** client handles controls/camera/VFX/UI; server validates all gameplay actions and computes outcomes. Avoid transmitting personal learner records to Roblox and do not include API secrets in client scripts.
 - **Evidence adapter:** local anonymous/session game events first (`discovered`, `hypothesis_tested`, `design_revised`, `world_restored`, `optional_reflection`); later a signed, privacy-reviewed, server-mediated bridge to Headstrong if justified. Gameplay telemetry is not by itself proof of mastery.
 - **Trusted adult content:** opt-in approved catalog messages, topic-based in initial release; verified relationship/guardian authorization and privacy review required before personal targeting.
@@ -55,20 +87,20 @@ An **OPEN DRAFT, UNMERGED PR #1**, `feat/learner-experience-vertical-slice`, add
 ## Delivery sequence and responsibility boundaries
 ### Gate 0 — Repository and risk reconciliation (agent: architect/security)
 1. Inspect main, open PR #1, existing contracts, migrations and tests. Inventory implementation vs stubs; identify breaking differences and outstanding threats.
-2. Decide whether to base Roblox adapter on PR #1 (preferred after review), or keep work on a separate branch pending it. Document dependency graph.
+2. Adopt or revise the product direction explicitly. Compare the smallest representative interaction in the implemented PlayCanvas runtime and the proposed Roblox runtime where tools permit; evaluate keyboard/touch, server authority, privacy, authoring and operations. Select the first runtime rather than treating this proposal as an engine mandate. Reuse #1's foundation after review, or keep experimental engine work independent pending it. Document dependency graph.
 3. Verify *currently available* Roblox Studio MCP operations in the local client and Studio; tool names/capabilities are environment-dependent. If inaccessible, proceed with repository Luau sources and offline tests, and report Studio integration blocked.
 **Done:** one architecture decision record, reviewed PR risks, baseline test report and clear independent workstreams.
 
-### Gate 1 — Playable fantasy prototype (agent: game director + Roblox engineer)
+### Gate 1 — Playable fantasy prototype (agent: game director + selected-runtime engineer)
 1. Greybox Explorer's Island with striking central mystery, clear movement, discoverable creature, workshop, and observatory.
 2. Build glider customization + forgiving test loop **or** creature ecology quest as the first completed system (choose whichever tests as more intrinsically fun after tiny paper/interactive prototype). The other quest is a small, playable hook.
 3. Add world consequence, optional hint, stop/resume/reset, basic accessibility, and entirely server-validated interactions.
-4. Run Studio playtest, inspect logs, record captures; demonstrate from new spawn through one complete adventure.
+4. Run the selected runtime's actual playtest (Studio if Roblox), inspect logs, record captures; demonstrate from new spawn through one complete adventure. Do not count an offline Luau test or browser dashboard as a Studio/gameplay pass.
 **Done:** a stranger can play a self-contained 15–20 minute journey with no developer explanation, two real choices in first 3 minutes, one memorable discovery and world change, zero fatal errors. No educational dashboard needed.
 
 ### Gate 2 — Transferable experience contract (agent: platform architect)
 1. Map first quest to existing ScenePlan/ExperienceSpec, identify exactly which mechanics require schema extension (triggers, state transitions, outcomes, learning signals).
-2. Version and test safe declarative schema (no executable scripts or arbitrary external asset URLs). Implement Roblox adapter; confirm PlayCanvas existing tests still pass.
+2. Version and test safe declarative schema (no executable scripts or arbitrary external asset URLs). Implement the selected adapter; implement Roblox only if approved and confirm existing PlayCanvas tests still pass.
 3. Demonstrate at least one content change made through the shared spec rather than hardcoding all quest text/state in Luau.
 **Done:** verified schema validation, invalid-spec rejection, backwards compatibility and one end-to-end runtime mapping.
 
@@ -91,7 +123,7 @@ Add second complete adventure, persistent personal-world changes and deeper play
 Proposed initial thresholds, subject to revision: >80% reach meaningful interaction in 2 min without coaching; >70% finish one adventure; >60% deliberately revise a hypothesis or construction; >50% voluntarily investigate an optional hook; >70% report wanting to explore more. Track also *why* children stop, not just time spent. Capture observed transfer of knowledge, not merely quest completion. No compulsory streaks or external tracking.
 
 ## Agent execution rules
-- Product destination above is binding; implementation is gate-based and PR-reviewable.
+- Product destination above is proposed until approved; after adoption it guides gate-based, PR-reviewable implementation. This file alone does not authorize a new workstream or tool action.
 - Work in short independent branches and draft PRs; do not merge or deploy or publish without approval.
 - Every PR: rationale, linked gate, screenshots for gameplay, tests run/results, limitations, privacy/security impact, migration impact and rollback plan.
 - Assign one agent to engine gameplay, one to core contracts, one to safety/tests; avoid parallel changes to the same files. Architect integrates and resolves conflicts.
@@ -100,9 +132,9 @@ Proposed initial thresholds, subject to revision: >80% reach meaningful interact
 - Do not turn Headstrong into a conventional school/LMS before the game fantasy is proven.
 
 ## Next executable handoff
-1. Open PR #1 and its `docs/evolution/` decision, hardening and backlog files; do code review, and do not merge.
-2. Create isolated `feat/curiosityverse-awakening-slice` from a reviewed baseline; scaffold `apps/roblox` with Luau source, validation/test harness and README.
-3. Check Studio MCP connectivity. If connected, build the greybox and capture first gameplay video/screenshots. If not, complete deterministic game mechanics offline and report exact blocker.
-4. Return a reviewable PR containing the smallest *playable* Awakening slice; do not stop after writing tickets.
+1. Finish Gate 0 review and obtain direction/merge decisions for these two PRs. Keep new dependency findings and #1's auth/migration compatibility review visible; do not merge or publish implicitly.
+2. After approval, use a short capability/interaction spike to select the first runtime, then create isolated `feat/curiosityverse-awakening-slice` from the reviewed baseline. Do not scaffold a second engine merely because this document names it.
+3. Build one complete glider-or-creature loop, two meaningful choices, an experiment with a visible consequence, optional reflection and a stopping point. Use keyboard/touch and adult engineering QA first; no real child data or unapproved publishing.
+4. If Roblox is selected, verify Studio MCP connectivity. If connected, capture actual Studio play; otherwise test deterministic mechanics offline and report gameplay/Studio validation blocked rather than complete. Return a reviewable playable increment with captures and test evidence, not just tickets or dashboards.
 
 **Ultimate definition of done:** An accessible, privacy-respecting, expandable universe where children *choose* adventures, learn through genuine experimentation, build original solutions, help others, and can eventually author curated new experiences. Education is the consequence of compelling play, not a prerequisite for it.
