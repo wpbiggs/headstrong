@@ -3,6 +3,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { env } from "./env";
+import { learningJourneysEnabled } from "./learning-config";
 import type { AppVariables } from "./lib/context";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
@@ -11,12 +12,15 @@ import { commonsRoutes } from "./routes/commons";
 import { computeRoutes } from "./routes/compute";
 import { guildRoutes } from "./routes/guilds";
 import { integrationRoutes } from "./routes/integrations";
+import { createLearningRoutes } from "./routes/learning";
 import { lmsRoutes } from "./routes/lms";
 import { moderationRoutes } from "./routes/moderation";
 import { postRoutes } from "./routes/posts";
 import { questRoutes } from "./routes/quest";
 
 const app = new Hono<{ Variables: AppVariables }>();
+// Validate containment before binding a socket, even if no learning request arrives.
+learningJourneysEnabled();
 
 app.use("*", cors());
 
@@ -32,6 +36,7 @@ app.route("/posts", postRoutes);
 app.route("/guilds", guildRoutes);
 app.route("/integrations", integrationRoutes);
 app.route("/lms", lmsRoutes);
+app.route("/learning", createLearningRoutes());
 app.route("/moderation", moderationRoutes);
 app.route("/quests", questRoutes);
 

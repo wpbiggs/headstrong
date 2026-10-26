@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "headstrong-preview-web",
+  "account_id": "b7019b91654de6e62fb986cd0864cba2",
+  "main": "cloudflare/entry.ts",
+  "compatibility_date": "2026-10-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+    "run_worker_first": true
+  },
+  "services": [{ "binding": "API", "service": "headstrong-preview-api" }],
+  "vars": {
+    "PREVIEW_SYNTHETIC_DATA_ONLY": "true",
+    "ACCESS_ISSUER": "https://crimson-forest-2c4e.cloudflareaccess.com",
+    "ACCESS_AUDIENCE": "364cff62774f60f8b547915ba201496fb68fbcee57a1bc9bb0889ef272d11b46"
+  },
+  "ratelimits": [
+    {
+      "name": "EDGE_RATE_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 120, "period": 60 }
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "invocation_logs": false },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  }
+}

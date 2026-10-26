@@ -17,15 +17,17 @@ const demoPost = {
 };
 
 export default async function PostPage({
-  params,
-  searchParams,
+  params: paramsPromise,
+  searchParams: searchParamsPromise,
 }: {
-  params: { id: string };
-  searchParams: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{
     email?: string;
     role?: "student" | "parent" | "educator" | "admin";
-  };
+  }>;
 }) {
+  const params = await paramsPromise;
+  const searchParams = await searchParamsPromise;
   const detail =
     searchParams.email && searchParams.role
       ? await fetchPostDetailLive({

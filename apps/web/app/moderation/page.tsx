@@ -28,14 +28,15 @@ const demoQueue = {
 };
 
 export default async function ModerationPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     email?: string;
     role?: "educator" | "admin";
     state?: "warn" | "block" | "reported";
-  };
+  }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const data =
     searchParams.email && searchParams.role
       ? await fetchModerationPostsLive({

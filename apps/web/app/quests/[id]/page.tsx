@@ -3,15 +3,17 @@ import { getDemoQuest } from "../../../lib/demo-quests";
 import { fetchQuestDetailLive } from "../../../lib/live-api";
 
 export default async function QuestPage({
-  params,
-  searchParams,
+  params: paramsPromise,
+  searchParams: searchParamsPromise,
 }: {
-  params: { id: string };
-  searchParams: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{
     email?: string;
     role?: "parent" | "educator" | "admin";
-  };
+  }>;
 }) {
+  const params = await paramsPromise;
+  const searchParams = await searchParamsPromise;
   const quest =
     searchParams.email && searchParams.role
       ? await fetchQuestDetailLive({

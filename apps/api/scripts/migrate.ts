@@ -1,27 +1,27 @@
-import { readFile, readdir } from "node:fs/promises";
-import path from "node:path";
+import "dotenv/config";
+import { fileURLToPath } from "node:url";
 import postgres from "postgres";
-import { env } from "../src/env";
+import { runMigrations } from "../src/migrations";
 
-const sql = postgres(env.DATABASE_URL);
-const migrationsDir = path.resolve(process.cwd(), "migrations");
+if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required.");
+const sql = postgres(process.env.DATABASE_URL, { max: 1 });
+const migrationsDir = fileURLToPath(new URL("../migrations", import.meta.url));
 
 async function run() {
-  const files = (await readdir(migrationsDir))
-    .filter((file) => file.endsWith(".sql"))
-    .sort();
-
-  for (const file of files) {
-    const contents = await readFile(path.join(migrationsDir, file), "utf8");
-    console.log(`Applying ${file}`);
-    await sql.unsafe(contents);
-  }
-
-  await sql.end();
+  const args = process.argv.slice(2);
+  if (args.some((arg) => !arg.startsWith("--baseline-through=")))
+    throw new Error("Only --baseline-through=FILENAME is supported.");
+  await runMigrations(sql, migrationsDir, {
+    baselineThrough: args
+      .find((arg) => arg.startsWith("--baseline-through="))
+      ?.split("=")[1],
+    log: console.log,
+  });
 }
 
-run().catch(async (error) => {
-  console.error(error);
-  await sql.end();
-  process.exit(1);
-});
+run()
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(() => sql.end());

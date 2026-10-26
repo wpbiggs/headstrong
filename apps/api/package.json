@@ -4,9 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev:cloudflare": "wrangler dev --ip 127.0.0.1",
+    "types:cloudflare": "wrangler types src/worker-env.d.ts --strict-vars false",
+    "typecheck:cloudflare": "pnpm types:cloudflare && tsc -p tsconfig.cloudflare.json",
+    "test:cloudflare": "node --import tsx --test ../web/cloudflare/gateway.test.ts",
+    "test:cloudflare:runtime": "node --import tsx --test ../web/cloudflare/runtime.test.ts",
+    "check:cloudflare": "wrangler deploy --dry-run",
+    "auth:token": "tsx scripts/access-token.ts",
+    "db:seed:preview": "tsx scripts/seed-preview.ts",
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json",
+    "test:learning:integration": "node --import tsx --import ./tests/fixture-env.ts --test tests/learning.integration.test.ts",
+    "test:integration": "node --import tsx --import ./tests/fixture-env.ts --test tests/*.integration.test.ts",
+    "test:learning:serve": "node --import tsx --import ./tests/fixture-env.ts tests/serve-learning-fixture.ts",
     "migrate": "tsx scripts/migrate.ts",
     "test": "API_HOST=127.0.0.1 API_PORT=4000 DATABASE_URL=postgres://postgres:postgres@localhost:5432/headstrong JWT_SECRET=12345678901234567890123456789012 OPENAI_BASE_URL=http://localhost:11434/v1 OPENAI_API_KEY=local-dev-key QUEST_COMPOSER_PROVIDER=stub QUEST_COMPOSER_MODEL=headstrong-quest-composer TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx TWILIO_AUTH_TOKEN=test-token TWILIO_FROM_NUMBER=+15555555555 MOODLE_BASE_URL=https://moodle.example.com MOODLE_TOKEN=test-token ERPNEXT_BASE_URL=https://erpnext.example.com ERPNEXT_API_KEY=test-key ERPNEXT_API_SECRET=test-secret LTI_ISSUER=https://platform.example.com LTI_CLIENT_ID=headstrong-lti-client LTI_DEPLOYMENT_ID=headstrong-deployment LTI_REDIRECT_URI=http://localhost:4000/integrations/lti/oidc/callback CLEVER_CLIENT_ID=replace-me CLEVER_CLIENT_SECRET=replace-me CLEVER_DISTRICT_ID=district-1 CLASSLINK_CLIENT_ID=replace-me CLASSLINK_CLIENT_SECRET=replace-me CLASSLINK_TENANT_ID=tenant-1 GOOGLE_CLASSROOM_CLIENT_ID=replace-me GOOGLE_CLASSROOM_CLIENT_SECRET=replace-me GOOGLE_CLASSROOM_REDIRECT_URI=http://localhost:4000/integrations/google-classroom/oauth/callback OPEN_BADGES_ISSUER_URL=https://badges.example.com OPEN_BADGES_ISSUER_NAME=Headstrong node --import tsx --test src/**/*.test.ts",
     "seed:parent-student-link": "tsx scripts/seed-parent-student-link.ts"
@@ -16,17 +27,18 @@
     "@headstrong/core": "workspace:*",
     "@headstrong/moderation": "workspace:*",
     "@headstrong/quest-composer": "workspace:*",
+    "@hono/node-server": "2.1.5",
     "@hono/zod-validator": "^0.3.0",
-    "@hono/node-server": "^1.13.7",
-    "dotenv": "^16.4.5",
-    "hono": "^4.6.10",
-    "jose": "^5.9.6",
-    "postgres": "^3.4.5",
-    "zod": "^3.23.8"
+    "dotenv": "^16.6.1",
+    "hono": "4.13.13",
+    "jose": "^5.10.0",
+    "postgres": "^3.4.9",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/node": "^22.8.1",
-    "@types/pg": "^8.11.10",
-    "tsx": "^4.19.2"
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "wrangler": "^4.151.0"
   }
 }

@@ -35,8 +35,9 @@ const demoDetail = {
 };
 
 export default async function CommonsAssetPage({
-  params,
-}: { params: { id: string } }) {
+  params: paramsPromise,
+}: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
   const detail = await fetchCommonsAssetDetailLive({ id: params.id }).catch(
     () => demoDetail,
   );

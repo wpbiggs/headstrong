@@ -17,7 +17,7 @@ import {
   reportSchema,
 } from "@headstrong/core";
 import type { DatabaseClient } from "../db";
-import { sql } from "../db";
+import { getDefaultDatabase } from "../db";
 
 export interface CreateDiscoveryPostInput {
   authorUserId: string;
@@ -202,7 +202,7 @@ function buildFeedItems(rows: Array<Record<string, unknown>>) {
 }
 
 export function createSocialRepository(
-  client: DatabaseClient = sql,
+  client: DatabaseClient = getDefaultDatabase(),
 ): SocialRepository {
   return {
     async createDiscoveryPost(input) {

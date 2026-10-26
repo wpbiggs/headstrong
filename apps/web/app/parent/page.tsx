@@ -4,14 +4,15 @@ import { listDemoQuests } from "../../lib/demo-quests";
 import { fetchQuestListLive } from "../../lib/live-api";
 
 export default async function ParentDashboardPage({
-  searchParams,
+  searchParams: searchParamsPromise,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     cursor?: string;
     state?: string;
     email?: string;
-  };
+  }>;
 }) {
+  const searchParams = await searchParamsPromise;
   const data = searchParams.email
     ? await fetchQuestListLive({
         email: searchParams.email,
