@@ -4,8 +4,12 @@ Status: accepted for local prototype; production rollout requires separate revie
 
 Subsequent authentication, migration and dependency changes are recorded in
 `local-hardening.md`. Local verification is the required check path; CI is optional.
+Current source/deployment/audit status is in `dev-environment-state.md`; the relationship
+to the proposed game-first destination in PR #2 is in `pr-reconciliation.md`.
 
 ## ADR-001 — Learner agency and pathways
+
+Scope: the connected learning-record workflow, not a mandatory entrance to every game.
 
 Persist a learner-owned goal before choosing a quest. For the minimal slice, select an
 existing parent-approved live quest instead of building a second quest composer. The
@@ -67,3 +71,17 @@ uses existing moderation and rejects non-safe results; this heuristic is explici
 insufficient for production safeguarding. Audit only identifiers/actions, not reflections
 or ratings. All SQL is parameterized, size bounded, actor scoped, and mutations atomic.
 Do not deploy this prototype or exercise external integrations without approval.
+
+## ADR-008 — Game-first destination vs platform workbench
+
+Status: reconciliation proposal; product/runtime adoption requires review.
+
+PR #2 proposes Curiosityverse/The Awakening as the flagship, with learning emerging
+from exploration and experimentation rather than required forms. The `/learn` studio
+and ADR-001 workflow are reusable platform/sample work, not evidence that the game is
+implemented or a requirement to put a dashboard before it. Preserve the existing
+engine-neutral contracts and authorization boundary. Keep curated session-only play
+separate from optional authorized saved evidence; never equate telemetry with mastery.
+Roblox is a proposed adapter, PlayCanvas is implemented, and no final flagship runtime
+decision or Studio MCP verification is claimed. See `pr-reconciliation.md` for sequencing
+and merge/release gates. No new engine, child playtest or publication is authorized here.

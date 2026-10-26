@@ -1,5 +1,10 @@
 # Prioritized implementation backlog
 
+**Scope:** this is the platform backlog, not the complete product roadmap. PR #2 proposes
+a game-first Curiosityverse destination. See `pr-reconciliation.md` before selecting
+new work: onboarding/dashboard expansion is not a substitute for proving a compelling
+adventure loop. The proposed direction and engine selection still require approval.
+
 Completed local hardening is recorded in `local-hardening.md`: full migration bootstrap,
 tracked/transactional upgrades, operator-issued revocable credentials, disabled insecure
 login/LTI handoff, dependency remediation and a CI-independent verification command.
