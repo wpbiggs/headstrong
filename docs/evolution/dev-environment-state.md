@@ -1,4 +1,4 @@
-# Headstrong dev environment — 2026-10-15 UTC
+# Headstrong dev environment — updated 2026-10-26 UTC
 
 This records actual account setup; the general preview runbook remains in
 [`cloudflare-supabase-preview.md`](cloudflare-supabase-preview.md).
@@ -25,8 +25,9 @@ This records actual account setup; the general preview runbook remains in
   `dec1615a-3e3e-46b6-aa66-952160c76533` admits only `wbiggers60@gmail.com` through
   the existing Cloudflare-account identity provider, with a one-hour session.
   No bypass policies, broad domain rules, or changes to unrelated apps were made.
-- Source Wrangler configurations now select this Cloudflare account and Access
-  issuer/audience. Both feature flags and public Worker URLs remain disabled.
+- Bootstrap configuration initially kept both feature flags and public Worker URLs
+  disabled. The approved dev deployment below subsequently enabled the synthetic
+  flags and Access-protected web hostname only.
 
 ## Approved dev deployment
 
@@ -76,13 +77,52 @@ for paid-plan upgrades. The audit finding remains visible and is not suppressed.
 
 ## Deployment gate
 
-The complete toolchain audit still reports unpatched `braces@3.0.3`
-([GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)) in vinext's
-build-time glob dependencies. Latest version rechecked: 3.0.3. Functional checks
-passed, but the full audit is not green. The user accepted this specific risk for
-private synthetic development only. Build only trusted code; revisit this decision
-when the dependency changes. Do not suppress the audit, deploy to production, or
-select paid services by default.
+The October 15 deployment was approved with a specific build-time `braces` advisory.
+That historical exception is **not** a blanket acceptance of future findings.
+
+On October 26 a fresh frozen-lockfile clean-checkout verification passed all 15
+functional checks, but **both audits failed**:
+
+- Production: one high Zod `3.25.76` resource-exhaustion advisory,
+  [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5).
+  The audit recommends `>=4.6.6`, a major-version change requiring compatibility work.
+- Complete toolchain: eight advisories (two high, four moderate, two low), affecting
+  Zod, undici `7.29.1` and fast-uri `3.1.8`. The current audit did not return the old
+  braces finding. Reports are preserved in the verification artifacts; no findings
+  were suppressed and no dependencies silently upgraded.
+
+Do not use the old approval to publish an update with this changed risk. Resolve or
+explicitly review these findings before another deployment. No remote changes were
+made during the learner-studio redesign.
+
+## Learner studio redesign — source only, not deployed
+
+Commits `b7f09e1` and `e912cf7` replace the default `/learn` test-harness landing with
+a responsive learner workspace: Discover, My journey, and My notebook. An original
+inline illustration introduces a fraction exploration with proportionally sized
+whole/half/quarter blocks rendered in PlayCanvas. No external assets or AI calls.
+
+- The default experience is explicitly a **local sample**, usable without credentials.
+  Its question, observations, reflection and optional check-in live only in React
+  memory. Reloading clears them. It does not submit evidence, award mastery, claim
+  guardian approval, or manufacture educator feedback.
+- The existing registered-account flow remains available under **Connect saved
+  workspace**, separately styled and still protected by all existing authorization
+  rules. No role is inferred from Access admission. The sample never receives tokens.
+- This is a design/interaction increment, **not finished account onboarding**. The
+  saved workspace still needs operator-provisioned credentials and record/quest IDs.
+  Proper enrollment, authorized quest discovery and role-specific dashboards remain.
+- Independent clean checkout `e912cf7`: lint, types, both builds, Worker dry runs,
+  gateway/workerd security tests, unit tests and 12 PostgreSQL tests pass. All four
+  browser tests pass on both production Next.js and vinext (eight browser runs).
+- New tests cover sample navigation, keyboard inspection, pause/resume, reflection,
+  optional check-in, tab-only notebook, no API submission/storage, mobile overflow,
+  and WebGL failure fallback. The original saved-account workflow tests still pass.
+- Manual production-browser review at 1440px and 390px: inspected actual screenshots,
+  verified a canvas pointer click selects a block, and found no page errors.
+  Review captures: `artifacts/local-verification/studio-{desktop,exploration,mobile}.png`.
+- The hosted hostname still serves the previous version. No PR merge or deployment
+  occurred as part of this redesign.
 
 ## Closing the dev preview
 
