@@ -1,6 +1,6 @@
 # Trusted guardian encouragement
 
-Status: local acceptance passed; private-preview rollout is recorded below.
+Status: pushed and deployed to the existing owner-only synthetic preview.
 Not production or participant-test approval.
 
 ## Product boundary
@@ -91,3 +91,42 @@ or a polished adventure world.
 - Reviewed the actual mobile screenshot showing distinct educator feedback and
   guardian encouragement, including the explicit no-assessment/no-mastery copy.
   Screenshot credentials are masked. Default game-entry/privacy tests still pass.
+
+## Hosted rollout receipt
+
+- Source `258e895` pushed on `feat/curiosityverse-local-integration` after local
+  acceptance. No source changes followed that verification, only evidence docs.
+- Applied Supabase migration `headstrong_guardian_encouragement` to `headstrong-dev`
+  only. One transaction took the repository migration advisory lock, checked all
+  14 existing history names/checksums and the synthetic-only configuration, applied
+  `0015_guardian_feedback.sql` and the additive grants, and recorded its checksum
+  in `headstrong_migrations` (not baselined):
+  `cfb6f3e1845a2b8afb005199c42e6f5fb3d26ccf51017b92c6ead6f1d34641c7`.
+  No prior migration, data row, broad bootstrap policy or existing credential was
+  rewritten. Post-apply metadata confirmed the exact checksum and enabled RLS.
+- Runtime role SELECT/INSERT: true; UPDATE/DELETE: false.
+  `anon` and `authenticated` table SELECT: false. Browser roles have no new grants.
+- Deployed API first, version `07270e37-94cf-4a46-9ed3-fa4a81960487`, then web
+  from verified output, version `e7dcbc95-b438-4c5b-953e-670bd365a865`.
+- The actual private API/Hyperdrive passed 22 synthetic checks: create/select/save,
+  no-session denial, learner/educator impersonation denial, forged author and
+  assessment rejection, short-Unicode validation, safeguarding refusal, guardian
+  reply, duplicate denial, refusal of guardian educator-assessment attempts,
+  all three authorized reads and logout/immediate refusal for all three roles.
+  Record: `4be2e184-39ba-4ae5-863b-c54b57f07766`.
+- Verified one guardian reply and zero educator assessments for that record.
+  Mastery-signal count stayed zero before/after. All three newly registered probe
+  sessions are revoked; existing operator/demo sessions were untouched. Tokens
+  were signed in memory and never printed. Sanitized script/report remain in
+  ignored `artifacts/local-verification/hosted-guardian-smoke*`.
+- After deployment, signed-out HTML, the actual new learning JS bundle and the
+  guardian endpoint still redirect to Access; direct API URL returns 404. The
+  authenticated browser still enters The Awakening with no adult form or quiz.
+  Full hosted-browser token-entry/save/reply acceptance is still distinct from
+  local browser tests plus hosted API checks; do not claim it was performed.
+- Fresh security/performance advisors have no WARN/ERROR items. INFO remains:
+  [18 deny-by-default RLS tables](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy),
+  [22 existing unindexed foreign keys](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys),
+  [20 unused indexes](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index).
+  The new guardian FK is indexed; its unused-index INFO is expected in this small
+  synthetic fixture, not a reason to drop the index.

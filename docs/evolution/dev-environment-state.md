@@ -47,6 +47,13 @@ synthetic quest/record setup, protected short-lived demo credentials and remaini
 acceptance limitations. The older no-bridge statement above describes the initial
 release, not this follow-up. Default play still uploads nothing automatically.
 
+**Guardian follow-up:** source `258e895` adds separate supportive guardian replies,
+not educator assessment or mastery. Migration 0015 and narrow runtime grants were
+applied to this synthetic project after verifying prior migration checksums.
+API `07270e37-94cf-4a46-9ed3-fa4a81960487` and web
+`e7dcbc95-b438-4c5b-953e-670bd365a865` are the current deployment; see
+[guardian receipt](guardian-feedback.md) for local/hosted tests, scope and limits.
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).

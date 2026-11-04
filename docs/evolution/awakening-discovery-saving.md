@@ -40,8 +40,10 @@ directs users to refresh before retrying; immutable evidence prevents overwrite.
 
 Existing educator comments can be refreshed on this page. Linked guardians can
 read the saved record through the existing authorized workflow. Guardian-authored
-supportive comments, easy account enrollment, approved quest discovery and a
-polished adult inbox remain separate work; no guardian assessment is fabricated.
+supportive comments are now supported through the separate
+[guardian encouragement flow](guardian-feedback.md). Easy account enrollment,
+approved quest discovery and a polished adult inbox remain work; no guardian
+assessment is fabricated.
 
 ## Verification scope
 
@@ -99,7 +101,7 @@ polished adult inbox remain separate work; no guardian assessment is fabricated.
 
 The previously deferred credential-exposure risk remains open. This feature does
 not rotate exposed credentials or revoke existing affected sessions. Guardian
-replies, simple enrollment, richer adventure duration and hosted 3D visual review
+replies are now implemented separately; simple enrollment, richer adventure duration and hosted 3D visual review
 remain product/release work; do not equate these tests with the full goal.
 
 ## Deployment receipt
