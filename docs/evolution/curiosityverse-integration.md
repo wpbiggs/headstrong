@@ -185,7 +185,8 @@ use**. No remote credential changes were made.
 - Asked explicitly about rotating the exposed preview credentials and revoking
   sessions. User chose to defer: “it's ok, please continue. i will address this
   later”. This accepts the unresolved risk only for the requested private preview;
-  it does not remediate exposure. No secrets or sessions are changed by this release.
+  it does not remediate exposure. Signing secrets and existing operator/demo
+  sessions are untouched. Temporary acceptance-test sessions are described below.
 - Adventure discovery notes remain session-only and are not transferred to the
   separate authorized evidence workspace. Direct optional discovery saving and
   polished adventure duration remain product gaps, not release claims.
@@ -215,8 +216,29 @@ use**. No remote credential changes were made.
   reported project `headstrong-dev` INACTIVE; recent logs were empty, and no
   database health conclusion can be drawn from empty advisor results while
   inactive. User explicitly approved resuming the existing project, with no
-  upgrade or credential rotation. Restore was accepted; hosted saved-workspace
-  acceptance remains pending database availability and retest.
+  upgrade or credential rotation. Restore completed and the deployed API returned
+  its expected 401 for missing account credentials after the DB configuration check.
+- Registered short-lived sessions only for the three existing synthetic seed
+  accounts, signed credentials in memory without printing/saving token values,
+  and used Wrangler's temporary remote service-binding proxy to exercise the
+  actual private API/Hyperdrive database. No new public API route was created.
+- At `2026-11-04T22:25:24Z`, all 15 hosted API checks passed: missing-token denial,
+  goal creation, pre-selection educator denial, approved quest selection,
+  authorized experience read, explicit evidence saving, human educator feedback,
+  duplicate-feedback rejection, linked-guardian read, and logout/immediate denial
+  for each of the three roles. Probe goal:
+  `07389608-eb08-4629-bee7-efd33409c92a`.
+- First probe stopped on a test-script response-shape mistake after selecting a
+  quest, not an application HTTP failure. Corrected it to GET journey detail
+  after selection, then reran with fresh sessions. Both probe records remain;
+  nothing was deleted to hide the failed attempt. Verified all six newly created
+  probe sessions are revoked. Existing potentially exposed sessions are not revoked.
+- Active-database advisors report no WARN/ERROR items. INFO findings remain:
+  [18 deny-by-default RLS tables without policies](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy),
+  [22 foreign keys without covering indexes](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys)
+  and [19 unused indexes](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index).
+  No schema, policy or index changes were made as part of resume/verification.
+  Local sanitized probe script/report: `artifacts/local-verification/hosted-smoke*`.
 
 Platform crash recovery, transactional finalization/allocations, token-aware
 operator interfaces, complete verified OAuth/LTI flows and real-child safeguards

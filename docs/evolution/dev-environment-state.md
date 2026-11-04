@@ -24,6 +24,22 @@ and revocation remain unresolved; the user's deferral applies only to the existi
 private synthetic preview release, not production or participant use. No secret
 values are included in the integration commit.
 
+## November 4 private preview release
+
+The reconciled platform/security/awakening source is now deployed from `dbf1855`;
+see [integration evidence](curiosityverse-integration.md#private-preview-deployment)
+for Worker version IDs, exact checks, scope and remaining limitations. The owner
+Access policy and narrow gateway remain unchanged. On discovering that
+`headstrong-dev` was inactive, the user explicitly approved resuming that existing
+project. Resume completed without a plan upgrade, credential rotation or schema
+change. The deployed private API passed the synthetic evidence/educator/guardian
+flow; all six short-lived probe sessions were revoked. Existing exposed preview
+credentials/sessions remain the user's deferred security task.
+
+Older source-only and hosted-state sections below are historical, not the current
+deployed version. Adventure notes still are not saved through the separate evidence
+workspace; the release does not imply the full game-first product is complete.
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).
