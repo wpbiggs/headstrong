@@ -5,6 +5,8 @@ import { useState } from "react";
 type OperatorMode =
   | "campaignCreate"
   | "campaignAllocate"
+  | "commonsCreate"
+  | "commonsRemix"
   | "lmsPublish"
   | "lmsCompletion"
   | "computeScheduleInference"
@@ -38,6 +40,39 @@ async function runOperatorAction(
         note: values.note,
       });
       return `Allocation applied. Outstanding: ${campaign.totals.outstandingUsd}`;
+    }
+    case "commonsCreate": {
+      const asset = await liveApi.createCommonsAssetLive({
+        email: values.email,
+        role: values.role as "educator" | "expert" | "admin",
+        title: values.title,
+        slug: values.slug,
+        summary: values.summary,
+        subject: values.subject,
+        gradeBand: values.gradeBand,
+        license: values.license,
+        sourceUrl: values.sourceUrl,
+        tags: values.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      });
+      return `Asset created: ${asset.id}`;
+    }
+    case "commonsRemix": {
+      const asset = await liveApi.remixCommonsAssetLive({
+        assetId: values.assetId,
+        email: values.email,
+        role: values.role as "educator" | "expert" | "admin",
+        title: values.title,
+        slug: values.slug,
+        summary: values.summary,
+        relation: values.relation as
+          | "remixed_from"
+          | "translated_from"
+          | "adapted_from",
+      });
+      return `Remix created: ${asset.asset.id}`;
     }
     case "lmsPublish": {
       const result = await liveApi.publishQuestToLmsLive({
@@ -137,6 +172,11 @@ export function OperatorPanel({
       <p className="eyebrow">Operator</p>
       <h2>{title}</h2>
       <p>{description}</p>
+      <p role="note">
+        Legacy operator preview: email/role login is disabled. These actions
+        require a token-aware operator UI before live use; no session is issued
+        from the fields below.
+      </p>
       {fields.map((field) => (
         <input
           key={field.name}
@@ -149,6 +189,7 @@ export function OperatorPanel({
             }))
           }
           placeholder={field.placeholder}
+          aria-label={field.name}
         />
       ))}
       <button className="button" disabled={submitting} type="submit">

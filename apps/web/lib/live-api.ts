@@ -256,6 +256,25 @@ export async function fetchCampaignDetailLive(input: {
   return response.json();
 }
 
+export async function fetchCampaignsLive(input: {
+  email: string;
+  role: "admin" | "educator" | "parent" | "expert";
+  educatorUserId?: string;
+  status?: "draft" | "live" | "closed";
+}) {
+  const token = await createToken({ email: input.email, role: input.role });
+  const url = new URL(`${env.NEXT_PUBLIC_API_URL}/campaigns`);
+  if (input.educatorUserId)
+    url.searchParams.set("educatorUserId", input.educatorUserId);
+  if (input.status) url.searchParams.set("status", input.status);
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("Failed to fetch campaign list.");
+  return response.json();
+}
+
 export async function fetchCampaignHistoryLive(input: {
   id: string;
   email: string;
@@ -480,6 +499,14 @@ export async function fetchCommonsAssetDetailLive(input: { id: string }) {
   );
   if (!response.ok) throw new Error("Failed to fetch asset detail.");
   return response.json();
+}
+
+export async function fetchCommonsContributorAssetsLive(input: {
+  subject?: string;
+  tag?: string;
+  limit?: number;
+}) {
+  return fetchCommonsAssetsLive(input);
 }
 
 export async function createCommonsAssetLive(input: {

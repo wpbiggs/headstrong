@@ -2,14 +2,14 @@ import { z } from "zod";
 
 export const parentStudentLinkSchema = z.object({
   linkId: z.string().min(1),
-  parentId: z.string().uuid(),
-  studentId: z.string().uuid(),
+  parentId: z.string().guid(),
+  studentId: z.string().guid(),
   createdAt: z.string().datetime(),
 });
 
 export const createParentStudentLinkSchema = z.object({
-  parentId: z.string().uuid(),
-  studentId: z.string().uuid(),
+  parentId: z.string().guid(),
+  studentId: z.string().guid(),
 });
 
 export const createParentStudentLinksRequestSchema = z

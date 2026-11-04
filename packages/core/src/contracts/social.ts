@@ -38,8 +38,8 @@ export const reportReasonSchema = z.enum([
 ]);
 
 export const discoveryPostSchema = z.object({
-  id: z.string().uuid(),
-  authorUserId: z.string().uuid(),
+  id: z.string().guid(),
+  authorUserId: z.string().guid(),
   authorRole: z.enum(["student", "parent", "educator", "expert", "admin"]),
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(5000),
@@ -57,24 +57,24 @@ export const discoveryPostSchema = z.object({
 });
 
 export const reactionSchema = z.object({
-  id: z.string().uuid(),
-  postId: z.string().uuid(),
-  userId: z.string().uuid(),
+  id: z.string().guid(),
+  postId: z.string().guid(),
+  userId: z.string().guid(),
   reactionType: reactionTypeSchema,
   createdAt: z.string().datetime(),
 });
 
 export const reportSchema = z.object({
-  id: z.string().uuid(),
-  postId: z.string().uuid(),
-  reportedByUserId: z.string().uuid(),
+  id: z.string().guid(),
+  postId: z.string().guid(),
+  reportedByUserId: z.string().guid(),
   reason: reportReasonSchema,
   details: z.string().max(500).optional(),
   createdAt: z.string().datetime(),
 });
 
 export const guildSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   name: z.string().min(1).max(80),
   description: z.string().min(1).max(500),
   slug: z
@@ -82,14 +82,14 @@ export const guildSchema = z.object({
     .min(1)
     .max(40)
     .regex(/^[a-z0-9-]+$/),
-  createdByUserId: z.string().uuid(),
+  createdByUserId: z.string().guid(),
   createdAt: z.string().datetime(),
 });
 
 export const guildMembershipSchema = z.object({
-  id: z.string().uuid(),
-  guildId: z.string().uuid(),
-  userId: z.string().uuid(),
+  id: z.string().guid(),
+  guildId: z.string().guid(),
+  userId: z.string().guid(),
   status: z.enum(["approved", "pending"]),
   createdAt: z.string().datetime(),
 });
@@ -98,7 +98,7 @@ export const createDiscoveryPostRequestSchema = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(5000),
   tags: z.array(z.string().min(1).max(32)).max(8).default([]),
-  guildId: z.string().uuid().optional(),
+  guildId: z.string().guid().optional(),
 });
 
 export const discoveryFeedItemSchema = z.object({
@@ -125,7 +125,7 @@ export const listDiscoveryFeedResponseSchema = z.object({
 
 export const parentApprovalQueueItemSchema = z.object({
   post: discoveryPostSchema,
-  authorStudentId: z.string().uuid(),
+  authorStudentId: z.string().guid(),
 });
 
 export const listParentApprovalQueueResponseSchema = z.object({

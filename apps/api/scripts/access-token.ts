@@ -12,7 +12,7 @@ async function run() {
   const auth = createAuthRepository();
   const accounts = createQuestRepository();
   if (action === "revoke-user") {
-    const userId = z.string().uuid().parse(value);
+    const userId = z.string().guid().parse(value);
     await auth.revokeUser(userId);
     console.log("All access tokens for the account have been revoked.");
     return;

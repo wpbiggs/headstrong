@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import {
   type CurriculumAsset,
+  environmentBooleanSchema,
   type lmsAssignmentInputSchema,
   type lmsCompletionInputSchema,
   type lmsCourseInputSchema,
@@ -13,8 +14,8 @@ import { z } from "zod";
 
 const lmsEnv = readEnv(
   {
-    ENABLE_MOODLE_ADAPTER: z.coerce.boolean().default(true),
-    ENABLE_ERPNEXT_ADAPTER: z.coerce.boolean().default(true),
+    ENABLE_MOODLE_ADAPTER: environmentBooleanSchema.default(true),
+    ENABLE_ERPNEXT_ADAPTER: environmentBooleanSchema.default(true),
     MOODLE_BASE_URL: z.string().url(),
     MOODLE_TOKEN: z.string().min(1),
     ERPNEXT_BASE_URL: z.string().url(),

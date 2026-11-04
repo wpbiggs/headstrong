@@ -28,8 +28,8 @@ export const questEventTypeSchema = z.enum([
 ]);
 
 export const questTaskSchema = z.object({
-  id: z.string().uuid(),
-  questId: z.string().uuid(),
+  id: z.string().guid(),
+  questId: z.string().guid(),
   title: z.string().min(1),
   kind: z.enum(["lesson", "exercise", "scene"]),
   summary: z.string().min(1),
@@ -42,33 +42,33 @@ export const questTaskSchema = z.object({
 });
 
 export const questSchema = z.object({
-  id: z.string().uuid(),
-  studentId: z.string().uuid(),
+  id: z.string().guid(),
+  studentId: z.string().guid(),
   name: z.string().min(1),
   summary: z.string().min(1),
   moderation: questModerationSchema,
   needsEducatorReview: z.boolean(),
   currentState: questStateSchema,
-  parentId: z.string().uuid(),
-  educatorId: z.string().uuid().nullable(),
+  parentId: z.string().guid(),
+  educatorId: z.string().guid().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
 
 export const questEventSchema = z.object({
-  id: z.string().uuid(),
-  questId: z.string().uuid(),
+  id: z.string().guid(),
+  questId: z.string().guid(),
   type: questEventTypeSchema,
-  performedByUserId: z.string().uuid(),
+  performedByUserId: z.string().guid(),
   performedByRole: roleSchema,
   metadata: z.record(z.string(), z.unknown()),
   createdAt: z.string().datetime(),
 });
 
 export const createQuestRequestSchema = z.object({
-  studentId: z.string().uuid(),
-  parentId: z.string().uuid(),
-  educatorId: z.string().uuid().nullable().optional(),
+  studentId: z.string().guid(),
+  parentId: z.string().guid(),
+  educatorId: z.string().guid().nullable().optional(),
   composition: composeQuestResponseSchema,
 });
 

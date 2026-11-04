@@ -1,6 +1,7 @@
 import {
   allocateCampaignRequestSchema,
   createCampaignRequestSchema,
+  listCampaignsRequestSchema,
 } from "@headstrong/core";
 import { zValidator } from "@hono/zod-validator";
 import { type Context, Hono } from "hono";
@@ -26,6 +27,23 @@ function handleCampaignServiceError(
 export const campaignRoutes: Hono<{ Variables: AppVariables }> = new Hono<{
   Variables: AppVariables;
 }>()
+  .get(
+    "/",
+    requireAuth,
+    zValidator("query", listCampaignsRequestSchema),
+    async (c) => {
+      try {
+        return c.json(
+          await campaignService.listCampaigns(
+            c.get("user"),
+            c.req.valid("query"),
+          ),
+        );
+      } catch (error) {
+        return handleCampaignServiceError(error, c);
+      }
+    },
+  )
   .post(
     "/",
     requireAuth,

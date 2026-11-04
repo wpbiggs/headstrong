@@ -39,6 +39,14 @@ function createRepositoryFixture() {
       campaigns.set(campaign.id, campaign);
       return campaign;
     },
+    async listCampaigns(input) {
+      return [...campaigns.values()].filter(
+        (campaign) =>
+          (!input.educatorUserId ||
+            campaign.educatorUserId === input.educatorUserId) &&
+          (!input.status || campaign.status === input.status),
+      );
+    },
     async createLedgerTransaction(input) {
       const current =
         transactions.get(input.entries[0]?.campaignId ?? "") ?? [];
@@ -177,6 +185,67 @@ test("non-admin cannot create campaign", async () => {
       assert.equal(error.status, 403);
       return true;
     },
+  );
+});
+
+test("campaign discovery scopes educators and denies roles without a visibility policy", async () => {
+  const fixture = createRepositoryFixture();
+  const service = createCampaignService(fixture.repository);
+  const educator = createSessionFixture({ role: "educator" });
+  for (const educatorUserId of [educator.sub, crypto.randomUUID()]) {
+    await fixture.repository.createCampaign({
+      educatorUserId,
+      createdByUserId: crypto.randomUUID(),
+      title: "Synthetic campaign",
+      description: "Local fixture",
+      status: "live",
+    });
+  }
+  assert.equal(
+    (await service.listCampaigns(createSessionFixture({ role: "admin" }), {}))
+      .items.length,
+    2,
+  );
+  const own = await service.listCampaigns(educator, { status: "live" });
+  assert.equal(own.items.length, 1);
+  assert.equal(own.items[0]?.educatorUserId, educator.sub);
+  assert.deepEqual(
+    (await service.listCampaigns(educator, { status: "closed" })).items,
+    [],
+  );
+  const other = [...fixture.campaigns.values()].find(
+    (campaign) => campaign.educatorUserId !== educator.sub,
+  );
+  assert.ok(other);
+  const ownCampaign = own.items[0];
+  assert.ok(ownCampaign);
+  await assert.rejects(
+    () =>
+      service.listCampaigns(educator, { educatorUserId: other.educatorUserId }),
+    /Forbidden/,
+  );
+  await assert.rejects(
+    () => service.getCampaign(educator, other.id),
+    /Forbidden/,
+  );
+  await assert.rejects(
+    () => service.getCampaignHistory(educator, other.id),
+    /Forbidden/,
+  );
+  for (const role of ["student", "parent", "expert"] as const) {
+    const user = createSessionFixture({ role });
+    await assert.rejects(() => service.listCampaigns(user, {}), /Forbidden/);
+    await assert.rejects(
+      () => service.getCampaign(user, ownCampaign.id),
+      /Forbidden/,
+    );
+    await assert.rejects(
+      () => service.getCampaignHistory(user, ownCampaign.id),
+      /Forbidden/,
+    );
+  }
+  await assert.rejects(() =>
+    service.listCampaigns(educator, { educatorUserId: "invalid" }),
   );
 });
 

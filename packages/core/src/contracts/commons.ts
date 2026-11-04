@@ -14,7 +14,7 @@ export const curriculumContributionTypeSchema = z.enum([
 ]);
 
 export const curriculumAssetSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   slug: z
     .string()
     .min(1)
@@ -27,7 +27,7 @@ export const curriculumAssetSchema = z.object({
   license: z.string().min(1).max(80),
   sourceUrl: z.string().url(),
   tags: z.array(z.string().min(1).max(32)).max(12),
-  contributorUserId: z.string().uuid(),
+  contributorUserId: z.string().guid(),
   contributionType: curriculumContributionTypeSchema,
   status: curriculumAssetStatusSchema,
   createdAt: z.string().datetime(),
@@ -35,15 +35,15 @@ export const curriculumAssetSchema = z.object({
 });
 
 export const curriculumRemixEdgeSchema = z.object({
-  id: z.string().uuid(),
-  parentAssetId: z.string().uuid(),
-  childAssetId: z.string().uuid(),
+  id: z.string().guid(),
+  parentAssetId: z.string().guid(),
+  childAssetId: z.string().guid(),
   relation: z.enum(["remixed_from", "translated_from", "adapted_from"]),
   createdAt: z.string().datetime(),
 });
 
 export const contributorScoreSchema = z.object({
-  contributorUserId: z.string().uuid(),
+  contributorUserId: z.string().guid(),
   assetCount: z.number().int().nonnegative(),
   remixCount: z.number().int().nonnegative(),
   impactCount: z.number().int().nonnegative(),
@@ -85,8 +85,8 @@ export const remixCurriculumAssetRequestSchema = z.object({
 });
 
 export const recordCurriculumImpactRequestSchema = z.object({
-  learnerId: z.string().uuid().optional(),
-  questId: z.string().uuid().optional(),
+  learnerId: z.string().guid().optional(),
+  questId: z.string().guid().optional(),
   signal: z.enum(["view", "reuse", "completion"]),
   weight: z.number().positive().max(10).default(1),
 });

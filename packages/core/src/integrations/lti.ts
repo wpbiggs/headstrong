@@ -18,6 +18,12 @@ export const ltiOidcLoginResponseSchema = z.object({
   nonce: z.string().min(1),
 });
 
+export const ltiPlatformConfigurationSchema = z.object({
+  authorization_endpoint: z.string().url(),
+  token_endpoint: z.string().url().optional(),
+  jwks_uri: z.string().url().optional(),
+});
+
 export const ltiLaunchContextSchema = z.object({
   version: z.literal("v1"),
   issuer: z.string().url(),
@@ -32,10 +38,10 @@ export const ltiLaunchContextSchema = z.object({
 export const ltiSessionHandoffSchema = z.object({
   launch: ltiLaunchContextSchema,
   session: z.object({
-    sub: z.string().uuid(),
+    sub: z.string().guid(),
     email: z.string().email(),
     role: z.enum(["student", "parent", "educator", "expert", "admin"]),
-    sessionId: z.string().uuid(),
+    sessionId: z.string().guid(),
   }),
   token: z.string().min(1),
 });
@@ -47,6 +53,9 @@ export interface LtiProvider {
   handleCallback(
     params: URLSearchParams,
   ): Promise<z.infer<typeof ltiLaunchContextSchema>>;
+  discoverPlatform(
+    issuer: string,
+  ): Promise<z.infer<typeof ltiPlatformConfigurationSchema>>;
 }
 
 export interface LtiConsumer {

@@ -5,6 +5,7 @@ import {
   curriculumAssetDetailSchema,
   curriculumAssetSchema,
 } from "@headstrong/core";
+import type postgres from "postgres";
 import type { DatabaseClient } from "../db";
 import { getDefaultDatabase } from "../db";
 
@@ -99,7 +100,7 @@ export function createCommonsRepository(
           contributor_user_id, contribution_type, status
         ) values (
           ${input.slug}, ${input.title}, ${input.summary}, ${input.subject}, ${input.gradeBand},
-          ${input.license}, ${input.sourceUrl}, ${JSON.stringify(input.tags)}::jsonb,
+          ${input.license}, ${input.sourceUrl}, ${client.json(input.tags)},
           ${input.contributorUserId}, ${input.contributionType}, ${input.status}
         ) returning *
       `;
@@ -214,7 +215,7 @@ export function createCommonsRepository(
     async logAuditEvent(input) {
       await client`
         insert into audit_events (actor_user_id, action, entity_type, entity_id, payload)
-        values (${input.actorUserId}, ${input.action}, ${input.entityType}, ${input.entityId}, ${JSON.stringify(input.payload)}::jsonb)
+        values (${input.actorUserId}, ${input.action}, ${input.entityType}, ${input.entityId}, ${client.json(input.payload as postgres.JSONValue)})
       `;
     },
   };

@@ -1,0 +1,392 @@
+.awakening {
+  --island-ink: #e4ede6;
+  --island-muted: #adc5c4;
+  --island-line: #36575d;
+  width: min(1400px, 100%);
+  margin: auto;
+  padding: 24px 32px 40px;
+  color: var(--island-ink);
+  background: #0d232d;
+  font-family: system-ui, sans-serif;
+}
+.awakening * {
+  box-sizing: border-box;
+}
+.awakening h1,
+.awakening h2,
+.awakening h3,
+.awakening p {
+  margin: 0;
+}
+.awakening h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 400;
+  letter-spacing: -.04em;
+}
+.awakening h2 {
+  font-family: Georgia, serif;
+  font-size: 1.7rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+.awakening h3 {
+  font-size: 1rem;
+}
+.awakening p {
+  line-height: 1.6;
+  color: var(--island-muted);
+}
+.awakening button,
+.awakening a {
+  -webkit-tap-highlight-color: transparent;
+}
+.awakening button {
+  min-height: 46px;
+  padding: 10px 15px;
+  border: 1px solid #53757b;
+  border-radius: 8px;
+  background: #173843;
+  color: var(--island-ink);
+  font: inherit;
+  font-size: .9rem;
+  cursor: pointer;
+  white-space: normal;
+}
+.awakening button:hover:not(:disabled) {
+  background: #254b55;
+}
+.awakening button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.awakening button[aria-pressed="true"] {
+  border-color: #f4c77c;
+  background: #3b493e;
+  color: #ffe1a8;
+  box-shadow: inset 0 0 0 1px #f4c77c;
+}
+.awakening :focus-visible {
+  outline: 3px solid #ffe1a8;
+  outline-offset: 4px;
+}
+.awakening a {
+  color: #bce6da;
+}
+.awakening-skip {
+  position: absolute;
+  top: -100px;
+}
+.awakening-skip:focus {
+  top: 10px;
+  z-index: 5;
+  background: #173843;
+  padding: 10px;
+}
+.island-header,
+.island-intro,
+.island-actions,
+.world-caption,
+.choice-row,
+.island-footer > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.island-header {
+  justify-content: space-between;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--island-line);
+}
+.island-brand {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.island-brand span {
+  font-size: .85rem;
+  color: var(--island-muted);
+  font-weight: 400;
+}
+.build-jump {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 15px;
+  border: 1px solid #53757b;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: .9rem;
+}
+.session-tag,
+.island-eyebrow,
+.world-caption {
+  font-size: .68rem;
+  letter-spacing: .13em;
+}
+.session-tag {
+  color: #c1d9c0;
+}
+.island-intro {
+  justify-content: space-between;
+  padding: 28px 0 24px;
+}
+.island-intro > div:first-child {
+  max-width: 650px;
+}
+.island-intro .island-eyebrow {
+  color: #f4c77c;
+  margin-bottom: 7px;
+}
+.island-world {
+  border: 1px solid var(--island-line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #102c38;
+}
+.island-world.awakened {
+  border-color: #b1e3b5;
+}
+.world-caption {
+  padding: 13px 18px;
+  justify-content: space-between;
+  color: #c7d5ca;
+}
+.awakened .world-caption {
+  color: #c7f4bd;
+}
+.island-world canvas {
+  display: block;
+  width: 100%;
+  height: 460px;
+}
+.render-status {
+  padding: 8px 18px;
+  font-size: .72rem;
+}
+.island-rest {
+  min-height: 340px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 28px;
+  text-align: center;
+}
+.island-rest > span {
+  color: #f4c77c;
+  font-size: 3rem;
+}
+.island-rest p {
+  max-width: 460px;
+}
+.island-play-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 42px;
+  margin: 30px 0;
+}
+.flight-console,
+.island-discoveries {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+.flight-console .island-eyebrow {
+  color: #f4c77c;
+}
+.awakening fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 12px 0 0;
+  border: 0;
+}
+.awakening legend {
+  padding: 0;
+  color: #e6d8b9;
+  font-size: .82rem;
+}
+.choice-row > button {
+  flex: 1;
+}
+.flight-readout {
+  padding: 16px;
+  background: #173843;
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  font-size: .8rem;
+}
+.flight-readout strong {
+  color: #ffe1a8;
+  margin-left: 5px;
+}
+.flight-readout progress {
+  width: 100%;
+  accent-color: #f4c77c;
+  height: 8px;
+}
+.awakening .launch-button {
+  background: #edc786;
+  color: #182f36;
+  border-color: #edc786;
+  font-weight: 700;
+}
+.awakening .launch-button:hover:not(:disabled) {
+  background: #ffe0aa;
+}
+.flight-message {
+  min-height: 3.2em;
+}
+.island-discoveries {
+  border-left: 1px solid var(--island-line);
+  padding-left: 32px;
+}
+.island-discoveries > button {
+  text-align: left;
+}
+.island-discoveries h3 {
+  margin-top: 12px;
+}
+.island-discoveries h3 span {
+  color: var(--island-muted);
+  font-size: .75rem;
+  font-weight: 400;
+}
+.experiment-list {
+  margin: 0;
+  padding-left: 24px;
+  display: grid;
+  gap: 12px;
+  font-size: .85rem;
+  line-height: 1.5;
+}
+.experiment-list span {
+  color: #f4d39c;
+}
+.awakening .island-small {
+  font-size: .75rem;
+}
+.island-note {
+  display: grid;
+  gap: 10px;
+  font-size: .85rem;
+}
+.island-note textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px;
+  border: 1px solid var(--island-line);
+  border-radius: 8px;
+  color: #e4ede6;
+  background: #173843;
+  font: inherit;
+}
+.island-footer {
+  border-top: 1px solid var(--island-line);
+  padding-top: 24px;
+  display: grid;
+  gap: 16px;
+}
+.island-footer p {
+  font-size: .8rem;
+}
+.island-footer a {
+  font-size: .85rem;
+}
+.connected-record {
+  display: grid;
+  gap: 20px;
+  min-height: 90vh;
+}
+.connected-record input,
+.connected-record textarea,
+.connected-record select {
+  color: #122c36;
+  background: #f1eadb;
+}
+@media (max-width: 700px) {
+  .awakening {
+    padding: 18px 16px 30px;
+  }
+  .island-header {
+    gap: 14px;
+    padding-bottom: 20px;
+  }
+  .island-play-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .island-discoveries {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--island-line);
+    padding-top: 24px;
+  }
+  .island-world canvas {
+    height: 340px;
+  }
+  .world-caption {
+    font-size: .6rem;
+  }
+  .island-intro {
+    gap: 20px;
+  }
+  .choice-row > button {
+    flex-basis: 42%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .awakening * {
+    scroll-behavior: auto !important;
+  }
+}
+@media (min-width: 1000px) {
+  .awakening:not(.connected-record) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
+    column-gap: 28px;
+  }
+  .island-header,
+  .island-intro,
+  .island-footer {
+    grid-column: 1 / -1;
+  }
+  .island-play-grid {
+    display: contents;
+  }
+  .island-world {
+    align-self: start;
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .flight-console {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  .island-discoveries {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--island-line);
+    padding: 24px 0;
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 28px;
+  }
+  .island-discoveries h2,
+  .island-discoveries h3,
+  .island-discoveries .experiment-list,
+  .island-discoveries .island-small,
+  .island-note {
+    grid-column: 1 / -1;
+  }
+  .island-discoveries h3 {
+    margin-top: 0;
+  }
+}

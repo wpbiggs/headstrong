@@ -51,4 +51,21 @@ test("enabled routes require auth, validate IDs and bound bodies before service 
     ).status,
     400,
   );
+  for (const body of ["{", "null", "[]", '{"objective":42}']) {
+    assert.equal(
+      (await app.request("/goals", { method: "POST", headers, body })).status,
+      400,
+    );
+  }
+  // Authentication must still run before the upgraded schema middleware.
+  assert.equal(
+    (
+      await app.request("/goals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ objective: 42 }),
+      })
+    ).status,
+    401,
+  );
 });

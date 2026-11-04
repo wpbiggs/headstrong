@@ -3,7 +3,9 @@ import {
   computeJobListResponseSchema,
   computeJobResultSchema,
   computeJobSchema,
+  providerRunSchema,
 } from "@headstrong/core";
+import type postgres from "postgres";
 import type { DatabaseClient } from "../db";
 import { getDefaultDatabase } from "../db";
 
@@ -19,6 +21,9 @@ function mapJob(row: Record<string, unknown>) {
     result: row.result ?? null,
     retryCount: Number(row.retry_count ?? 0),
     lastError: row.last_error ?? null,
+    nextAttemptAt: row.next_attempt_at
+      ? new Date(String(row.next_attempt_at)).toISOString()
+      : null,
     createdAt: new Date(String(row.created_at)).toISOString(),
     updatedAt: new Date(String(row.updated_at)).toISOString(),
   });
@@ -52,6 +57,7 @@ export interface ComputeRepository {
       result?: Record<string, unknown> | null;
       retryCount?: number;
       lastError?: string | null;
+      nextAttemptAt?: string | null;
     },
   ): Promise<ReturnType<typeof computeJobSchema.parse>>;
   getJobById(
@@ -84,9 +90,13 @@ export interface ComputeRepository {
     durationMs: number;
     attempt: number;
   }): Promise<void>;
+  getProviderRuns(
+    jobId: string,
+  ): Promise<Array<ReturnType<typeof providerRunSchema.parse>>>;
+  // Atomically claims one due job, setting running and incrementing retryCount.
   getNextQueuedJob(): Promise<ReturnType<typeof computeJobSchema.parse> | null>;
   logAuditEvent(input: {
-    actorUserId: string;
+    actorUserId: string | null;
     action: string;
     entityType: string;
     entityId: string;
@@ -101,7 +111,7 @@ export function createComputeRepository(
     async createJob(input) {
       const [row] = await client`
         insert into compute_jobs (version, type, status, payload, provider_id, validator_id)
-        values (${input.version}, ${input.type}, 'queued', ${JSON.stringify(input.payload)}::jsonb, ${input.providerId}, ${input.validatorId})
+        values (${input.version}, ${input.type}, 'queued', ${client.json(input.payload as postgres.JSONValue)}, ${input.providerId}, ${input.validatorId})
         returning *
       `;
       return mapJob(row);
@@ -109,10 +119,14 @@ export function createComputeRepository(
     async updateJob(id, input) {
       const [row] = await client`
         update compute_jobs
-        set status = ${input.status}, result = ${input.result ? `${JSON.stringify(input.result)}` : null}::jsonb, retry_count = coalesce(${input.retryCount ?? null}, retry_count), last_error = coalesce(${input.lastError ?? null}, last_error), updated_at = now()
-        where id = ${id}
+        set status = ${input.status}, result = case when ${input.result !== undefined} then ${input.result ? client.json(input.result as postgres.JSONValue) : null}::jsonb else result end, retry_count = coalesce(${input.retryCount ?? null}, retry_count), last_error = case when ${input.lastError !== undefined} then ${input.lastError ?? null} else last_error end, next_attempt_at = ${input.nextAttemptAt ?? null}, updated_at = now()
+        where id = ${id} and status = 'running'
         returning *
       `;
+      if (!row)
+        throw new Error(
+          "Compute job is not running; terminal jobs are immutable.",
+        );
       return mapJob(row);
     },
     async getJobById(id) {
@@ -150,7 +164,7 @@ export function createComputeRepository(
     async createJobEvent(input) {
       const [row] = await client`
         insert into compute_job_events (job_id, type, payload)
-        values (${input.jobId}, ${input.type}, ${JSON.stringify(input.payload)}::jsonb)
+        values (${input.jobId}, ${input.type}, ${client.json(input.payload as postgres.JSONValue)})
         returning *
       `;
       return computeJobEventSchema.parse({
@@ -199,17 +213,37 @@ export function createComputeRepository(
     },
     async getNextQueuedJob() {
       const [row] = await client`
-        select * from compute_jobs
-        where status = 'queued'
-        order by created_at asc
-        limit 1
+        update compute_jobs set status = 'running', retry_count = retry_count + 1,
+          next_attempt_at = null, updated_at = now()
+        where id = (
+          select id from compute_jobs
+          where status = 'queued' and (next_attempt_at is null or next_attempt_at <= now())
+          order by created_at asc, id asc
+          limit 1 for update skip locked
+        )
+        returning *
       `;
       return row ? mapJob(row) : null;
+    },
+    async getProviderRuns(jobId) {
+      const rows =
+        await client`select * from provider_runs where job_id = ${jobId} order by created_at asc, id asc`;
+      return rows.map((row) =>
+        providerRunSchema.parse({
+          id: row.id,
+          jobId: row.job_id,
+          providerId: row.provider_id,
+          validatorId: row.validator_id,
+          durationMs: row.duration_ms,
+          attempt: row.attempt,
+          createdAt: new Date(String(row.created_at)).toISOString(),
+        }),
+      );
     },
     async logAuditEvent(input) {
       await client`
         insert into audit_events (actor_user_id, action, entity_type, entity_id, payload)
-        values (${input.actorUserId}, ${input.action}, ${input.entityType}, ${input.entityId}, ${JSON.stringify(input.payload)}::jsonb)
+        values (${input.actorUserId}, ${input.action}, ${input.entityType}, ${input.entityId}, ${client.json(input.payload as postgres.JSONValue)})
       `;
     },
   };

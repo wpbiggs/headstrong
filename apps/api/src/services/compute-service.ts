@@ -1,5 +1,6 @@
 import {
   type Session,
+  computeJobDetailSchema,
   computeJobListResponseSchema,
   computeJobRequestSchema,
 } from "@headstrong/core";
@@ -54,10 +55,11 @@ export function createComputeService(
       }
       const job = await repository.getJobById(jobId);
       if (!job) throw new ComputeServiceError("Job not found.", 404);
-      return {
+      return computeJobDetailSchema.parse({
         job,
         events: await repository.getJobEvents(jobId),
-      };
+        providerRuns: await repository.getProviderRuns(jobId),
+      });
     },
 
     async listJobs(

@@ -8,6 +8,7 @@ import {
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
+import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { learningJourneysEnabled } from "../learning-config";
 import type { AppVariables } from "../lib/context";
@@ -43,10 +44,12 @@ export function createLearningRoutes(
       return c.json({ error: error.message }, error.status);
     if (error instanceof z.ZodError)
       return c.json({ error: "Invalid learning record." }, 400);
+    if (error instanceof HTTPException && error.status === 400)
+      return c.json({ error: "Invalid learning request." }, 400);
     // Do not leak private input or database diagnostics.
     return c.json({ error: "Learning request failed." }, 500);
   });
-  const idValidator = zValidator("param", z.object({ id: z.string().uuid() }));
+  const idValidator = zValidator("param", z.object({ id: z.string().guid() }));
   return app
     .post("/goals", zValidator("json", learningGoalInputSchema), async (c) =>
       c.json(await service.createGoal(c.get("user"), c.req.valid("json")), 201),

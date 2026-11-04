@@ -200,7 +200,9 @@ try {
     "test:integration",
   ]);
   // Never overlap build and typecheck or reuse a developer's running web server.
-  const build = await run("Local production web build", ["build"]);
+  // Verify actual output, not a cached task result over a previous flag-off build.
+  // Direct framework builds can replace .next independently of Turbo's task cache.
+  const build = await run("Local production web build", ["build", "--force"]);
   if (integration === 0 && build === 0) {
     await ensurePortFree(3000);
     await ensurePortFree(4000);

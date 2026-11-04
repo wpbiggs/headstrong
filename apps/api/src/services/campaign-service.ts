@@ -1,5 +1,10 @@
 import { createHash, randomUUID } from "node:crypto";
-import { type Session, createCampaignRequestSchema } from "@headstrong/core";
+import {
+  type Session,
+  createCampaignRequestSchema,
+  listCampaignsRequestSchema,
+  listCampaignsResponseSchema,
+} from "@headstrong/core";
 import { buildBalancedLedgerTransaction } from "@headstrong/ledger";
 import { createQuestRepository } from "../repositories/app-repository";
 import {
@@ -23,6 +28,21 @@ export function createCampaignService(
   commonsRepository = createCommonsRepository(),
   userRepository = createQuestRepository(),
 ) {
+  function requireCampaignReader(user: Session) {
+    // No campaign-to-guardian/expert visibility policy exists yet: deny by default.
+    if (user.role !== "admin" && user.role !== "educator") {
+      throw new CampaignServiceError("Forbidden.", 403);
+    }
+  }
+  function requireCampaignVisibility(
+    user: Session,
+    campaign: { educatorUserId: string },
+  ) {
+    requireCampaignReader(user);
+    if (user.role !== "admin" && campaign.educatorUserId !== user.sub) {
+      throw new CampaignServiceError("Forbidden.", 403);
+    }
+  }
   return {
     async createCampaign(user: Session, input: unknown) {
       if (user.role !== "admin") {
@@ -71,10 +91,27 @@ export function createCampaignService(
       return campaign;
     },
 
-    async getCampaign(user: Session, campaignId: string) {
-      if (!["admin", "educator", "parent", "expert"].includes(user.role)) {
-        throw new CampaignServiceError("Forbidden.", 403);
+    async listCampaigns(
+      user: Session,
+      input: { educatorUserId?: string; status?: "draft" | "live" | "closed" },
+    ) {
+      requireCampaignReader(user);
+      const parsed = listCampaignsRequestSchema.parse(input);
+      if (user.role === "educator") {
+        if (parsed.educatorUserId && parsed.educatorUserId !== user.sub) {
+          throw new CampaignServiceError("Forbidden.", 403);
+        }
+        parsed.educatorUserId = user.sub;
       }
+      const items = await repository.listCampaigns(parsed);
+      return listCampaignsResponseSchema.parse({ items });
+    },
+
+    async getCampaign(user: Session, campaignId: string) {
+      requireCampaignReader(user);
+      const campaign = await repository.getCampaignById(campaignId);
+      if (!campaign) throw new CampaignServiceError("Campaign not found.", 404);
+      requireCampaignVisibility(user, campaign);
       const detail = await getCampaignDetail(repository, campaignId);
       if (!detail) {
         throw new CampaignServiceError("Campaign not found.", 404);
@@ -93,13 +130,12 @@ export function createCampaignService(
       cursor?: string,
       limit = 20,
     ) {
-      if (!["admin", "educator", "parent", "expert"].includes(user.role)) {
-        throw new CampaignServiceError("Forbidden.", 403);
-      }
+      requireCampaignReader(user);
       const campaign = await repository.getCampaignById(campaignId);
       if (!campaign) {
         throw new CampaignServiceError("Campaign not found.", 404);
       }
+      requireCampaignVisibility(user, campaign);
       return repository.getLedgerHistory(campaignId, cursor, limit);
     },
 

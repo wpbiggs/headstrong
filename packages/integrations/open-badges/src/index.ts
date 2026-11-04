@@ -1,4 +1,4 @@
-import { readEnv } from "@headstrong/core";
+import { environmentBooleanSchema, readEnv } from "@headstrong/core";
 import {
   type OpenBadgesIssuer,
   openBadgeAssertionSchema,
@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const env = readEnv(
   {
-    ENABLE_OPEN_BADGES: z.coerce.boolean().default(false),
+    ENABLE_OPEN_BADGES: environmentBooleanSchema.default(false),
     OPEN_BADGES_ISSUER_URL: z
       .string()
       .url()

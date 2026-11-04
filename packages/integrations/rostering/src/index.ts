@@ -1,4 +1,4 @@
-import { readEnv } from "@headstrong/core";
+import { environmentBooleanSchema, readEnv } from "@headstrong/core";
 import {
   type RosterConnector,
   districtRosterSyncResultSchema,
@@ -8,11 +8,11 @@ import { z } from "zod";
 
 const env = readEnv(
   {
-    ENABLE_CLEVER_ROSTERING: z.coerce.boolean().default(false),
+    ENABLE_CLEVER_ROSTERING: environmentBooleanSchema.default(false),
     CLEVER_CLIENT_ID: z.string().min(1).default("replace-me"),
     CLEVER_CLIENT_SECRET: z.string().min(1).default("replace-me"),
     CLEVER_DISTRICT_ID: z.string().min(1).default("district-1"),
-    ENABLE_CLASSLINK_ROSTERING: z.coerce.boolean().default(false),
+    ENABLE_CLASSLINK_ROSTERING: environmentBooleanSchema.default(false),
     CLASSLINK_CLIENT_ID: z.string().min(1).default("replace-me"),
     CLASSLINK_CLIENT_SECRET: z.string().min(1).default("replace-me"),
     CLASSLINK_TENANT_ID: z.string().min(1).default("tenant-1"),

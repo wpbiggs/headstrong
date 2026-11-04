@@ -16,29 +16,29 @@ import {
 } from "./profile";
 
 export const skillSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   name: z.string().min(1),
   category: z.string().min(1),
 });
 
 export const lessonSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   title: z.string().min(1),
   objective: z.string().min(1),
   recommendedAssets: z.array(z.string()).default([]),
 });
 
 export const masterySignalSchema = z.object({
-  skillId: z.string().uuid(),
+  skillId: z.string().guid(),
   score: z.number().min(0).max(1),
   evidenceCount: z.number().int().min(0),
 });
 
 export const sessionSchema = z.object({
-  sub: z.string().uuid(),
+  sub: z.string().guid(),
   email: z.string().email(),
   role: roleSchema,
-  sessionId: z.string().uuid(),
+  sessionId: z.string().guid(),
 });
 
 export type Student = z.infer<typeof studentProfileSchema>;
@@ -64,6 +64,11 @@ export const healthResponseSchema = z.object({
   ok: z.literal(true),
   service: z.literal("api"),
 });
+
+export const environmentBooleanSchema = z.preprocess(
+  (value) => (value === "true" ? true : value === "false" ? false : value),
+  z.boolean(),
+);
 
 export function readEnv<T extends z.ZodRawShape>(
   schemaShape: T,

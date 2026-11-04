@@ -6,7 +6,7 @@ export const learningGoalInputSchema = z.object({
   objective: z.string().trim().min(5).max(500),
 });
 export const selectLearningQuestSchema = z.object({
-  questId: z.string().uuid(),
+  questId: z.string().guid(),
 });
 export const learningEvidenceInputSchema = z.object({
   reflection: z.string().trim().min(10).max(2000),
@@ -25,18 +25,18 @@ export const learningEvidenceSchema = portfolioArtifactSchema
   .omit({ url: true, kind: true })
   .extend({
     kind: z.literal("text"),
-    taskId: z.string().uuid(),
+    taskId: z.string().guid(),
     ...learningEvidenceInputSchema.shape,
   });
 export const learningJourneySchema = z.object({
-  id: z.string().uuid(),
-  learnerId: z.string().uuid(),
+  id: z.string().guid(),
+  learnerId: z.string().guid(),
   objective: learningGoalInputSchema.shape.objective,
-  questId: z.string().uuid().nullable(),
+  questId: z.string().guid().nullable(),
   createdAt: z.string().datetime(),
   evidence: learningEvidenceSchema.nullable(),
   feedback: learningFeedbackInputSchema
-    .extend({ educatorId: z.string().uuid(), createdAt: z.string().datetime() })
+    .extend({ educatorId: z.string().guid(), createdAt: z.string().datetime() })
     .nullable(),
   satisfaction: learningSatisfactionInputSchema.nullable(),
 });

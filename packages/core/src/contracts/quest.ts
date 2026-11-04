@@ -59,9 +59,9 @@ export const questDashboardRoleSchema = z.enum(["parent", "educator", "admin"]);
 
 export const questDashboardItemSchema = z.object({
   quest: z.object({
-    id: z.string().uuid(),
-    studentId: z.string().uuid(),
-    parentId: z.string().uuid(),
+    id: z.string().guid(),
+    studentId: z.string().guid(),
+    parentId: z.string().guid(),
     name: z.string().min(1),
     summary: z.string().min(1),
     moderation: questModerationSchema,
@@ -78,7 +78,7 @@ export const questDashboardItemSchema = z.object({
   lastUpdated: z.string().datetime(),
   assignedEducator: z
     .object({
-      id: z.string().uuid(),
+      id: z.string().guid(),
       email: z.string().email(),
     })
     .nullable(),
@@ -88,7 +88,7 @@ export const questDashboardDetailSchema = questDashboardItemSchema.extend({
   createdAt: z.string().datetime(),
   tasks: z.array(
     z.object({
-      id: z.string().uuid(),
+      id: z.string().guid(),
       title: z.string().min(1),
       kind: z.enum(["lesson", "exercise", "scene"]),
       summary: z.string().min(1),

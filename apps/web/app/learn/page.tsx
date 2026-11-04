@@ -1,5 +1,6 @@
-import { LearningStudio } from "../../components/learning-studio";
+import { AwakeningAdventure } from "../../components/awakening-adventure";
 import "./learn.css";
+import "./awakening.css";
 
 export default function LearnPage() {
   if (process.env.NEXT_PUBLIC_ENABLE_LEARNING_JOURNEYS !== "true") {
@@ -9,5 +10,5 @@ export default function LearnPage() {
       </main>
     );
   }
-  return <LearningStudio />;
+  return <AwakeningAdventure />;
 }

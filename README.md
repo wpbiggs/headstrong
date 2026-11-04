@@ -4,9 +4,19 @@
 
 The [Curiosityverse proposal (PR #2)](https://github.com/wpbiggs/headstrong/pull/2)
 describes a game-first destination. The current implementation is a candidate platform
-foundation and small PlayCanvas sample, not that finished adventure game. See
+foundation and bounded PlayCanvas glider prototype, not that finished adventure game. See
 [`docs/evolution/pr-reconciliation.md`](docs/evolution/pr-reconciliation.md) for the
 relationship, verified scope, open decisions and recommended next milestone.
+
+The source-only [Awakening prototype](docs/evolution/awakening-adventure.md) opens at
+`/` or `/learn` when the existing learning feature flag is enabled: choose wings and
+wind, fly, experiment again, and wake the island beacon. Play is synthetic/session-only;
+reflection and the separate authorized saved workspace are optional. No deployment or
+child testing is implied. The inherited fraction workbench remains local-only at
+`/learn/studio`; the current protected gateway rejects that route.
+
+Combined local workstream evidence and remaining release gates are recorded in
+[`docs/evolution/curiosityverse-integration.md`](docs/evolution/curiosityverse-integration.md).
 
 ## Local verification (no CI required)
 
@@ -14,8 +24,9 @@ Cloudflare + Supabase preview preparation is available: run `pnpm verify:cloudfl
 Worker builds/runtime checks plus both browser renderers. See
 [`docs/evolution/cloudflare-supabase-preview.md`](docs/evolution/cloudflare-supabase-preview.md)
 for the private-preview architecture, required account inputs and approval-only runbook.
-Nothing is deployed automatically. The October 26 audits flag a runtime Zod advisory
-and toolchain findings; neither audit is green and no findings are suppressed. The
+Nothing is deployed automatically. The November 4 local security fix resolves the
+runtime and toolchain findings; [both audits are clean](docs/evolution/dependency-security.md),
+without suppressions. This does not update the hosted preview. The
 [dev state record](docs/evolution/dev-environment-state.md) distinguishes the older
 approved hosted preview from the newer source-only studio redesign.
 

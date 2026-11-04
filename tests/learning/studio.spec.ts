@@ -10,7 +10,7 @@ test("local exploration is usable without credentials and never submits sample n
       apiCalls.push(request.url());
   });
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/learn");
+  await page.goto("/learn/studio");
   await expect(
     page.getByRole("heading", { name: "What will you discover today?" }),
   ).toBeVisible();
@@ -74,7 +74,7 @@ test("studio fits mobile and has explicit WebGL fallback", async ({ page }) => {
     HTMLCanvasElement.prototype.getContext = (() =>
       null) as typeof HTMLCanvasElement.prototype.getContext;
   });
-  await page.goto("/learn");
+  await page.goto("/learn/studio");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

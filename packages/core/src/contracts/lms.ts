@@ -18,14 +18,14 @@ export const lmsAssignmentInputSchema = z.object({
 
 export const lmsCompletionInputSchema = z.object({
   assignmentId: z.string().min(1),
-  learnerId: z.string().uuid(),
+  learnerId: z.string().guid(),
   completedAt: z.string().datetime(),
   score: z.number().min(0).max(1),
 });
 
 export const lmsGradeSchema = z.object({
   assignmentId: z.string().min(1),
-  learnerId: z.string().uuid(),
+  learnerId: z.string().guid(),
   score: z.number().min(0).max(1),
   recordedAt: z.string().datetime(),
 });
@@ -50,9 +50,9 @@ export const questLmsPublishRequestSchema = z.object({
 
 export const questLmsCompletionRequestSchema = z.object({
   provider: z.enum(["moodle"]),
-  learnerId: z.string().uuid(),
+  learnerId: z.string().guid(),
   assignmentExternalId: z.string().min(1),
   score: z.number().min(0).max(1),
   completedAt: z.string().datetime(),
-  skillId: z.string().uuid(),
+  skillId: z.string().guid(),
 });

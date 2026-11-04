@@ -24,16 +24,22 @@ export const computeScoringPayloadSchema = z.object({
   aggregateOnly: z.boolean().default(true),
 });
 
-export const computeJobRequestSchema = z.object({
-  version: computeProtocolVersionSchema,
-  type: computeJobTypeSchema,
-  payload: z.union([
-    computeInferencePayloadSchema,
-    computeScoringPayloadSchema,
-  ]),
-  providerId: z.string().min(1),
-  validatorId: z.string().min(1),
-});
+export const computeJobRequestSchema = z.discriminatedUnion("type", [
+  z.object({
+    version: computeProtocolVersionSchema,
+    type: z.literal("inference"),
+    payload: computeInferencePayloadSchema,
+    providerId: z.string().min(1),
+    validatorId: z.string().min(1),
+  }),
+  z.object({
+    version: computeProtocolVersionSchema,
+    type: z.literal("scoring"),
+    payload: computeScoringPayloadSchema,
+    providerId: z.string().min(1),
+    validatorId: z.string().min(1),
+  }),
+]);
 
 export const computeJobResultSchema = z.object({
   output: z.string().min(1),
@@ -51,15 +57,25 @@ export const computeJobEventTypeSchema = z.enum([
 ]);
 
 export const computeJobEventSchema = z.object({
-  id: z.string().uuid(),
-  jobId: z.string().uuid(),
+  id: z.string().guid(),
+  jobId: z.string().guid(),
   type: computeJobEventTypeSchema,
   payload: z.record(z.string(), z.unknown()),
   createdAt: z.string().datetime(),
 });
 
+export const providerRunSchema = z.object({
+  id: z.string().guid(),
+  jobId: z.string().guid(),
+  providerId: z.string().min(1),
+  validatorId: z.string().min(1),
+  durationMs: z.number().int().nonnegative(),
+  attempt: z.number().int().positive(),
+  createdAt: z.string().datetime(),
+});
+
 export const computeJobSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   version: computeProtocolVersionSchema,
   type: computeJobTypeSchema,
   status: computeJobStatusSchema,
@@ -72,6 +88,7 @@ export const computeJobSchema = z.object({
   result: computeJobResultSchema.nullable(),
   retryCount: z.number().int().nonnegative(),
   lastError: z.string().nullable(),
+  nextAttemptAt: z.string().datetime().nullable().default(null),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -85,6 +102,12 @@ export const computeJobListRequestSchema = z.object({
 export const computeJobListResponseSchema = z.object({
   items: z.array(computeJobSchema),
   nextCursor: z.string().nullable(),
+});
+
+export const computeJobDetailSchema = z.object({
+  job: computeJobSchema,
+  events: z.array(computeJobEventSchema),
+  providerRuns: z.array(providerRunSchema),
 });
 
 export type ComputeJob = z.infer<typeof computeJobSchema>;

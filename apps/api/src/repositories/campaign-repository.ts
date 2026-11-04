@@ -7,6 +7,7 @@ import {
   ledgerTransactionSchema,
 } from "@headstrong/core";
 import { summarizeCampaignTotals } from "@headstrong/ledger";
+import type postgres from "postgres";
 import type { DatabaseClient } from "../db";
 import { getDefaultDatabase } from "../db";
 
@@ -45,6 +46,10 @@ export interface CampaignRepository {
     description: string;
     status: Campaign["status"];
   }): Promise<Campaign>;
+  listCampaigns(input: {
+    educatorUserId?: string;
+    status?: Campaign["status"];
+  }): Promise<Campaign[]>;
   createLedgerTransaction(input: {
     id: string;
     reference: string;
@@ -120,6 +125,23 @@ export function createCampaignRepository(
       return mapCampaign(row);
     },
 
+    async listCampaigns(input) {
+      const educatorFilter = input.educatorUserId
+        ? client`and educator_user_id = ${input.educatorUserId}`
+        : client``;
+      const statusFilter = input.status
+        ? client`and status = ${input.status}`
+        : client``;
+      const rows = await client`
+        select * from campaigns
+        where true
+        ${educatorFilter}
+        ${statusFilter}
+        order by created_at desc, id desc
+      `;
+      return rows.map(mapCampaign);
+    },
+
     async createLedgerTransaction(input) {
       await client.begin(async (tx) => {
         await tx`
@@ -136,7 +158,7 @@ export function createCampaignRepository(
               ${entry.amount},
               ${entry.currency},
               ${entry.campaignId ?? null},
-              ${JSON.stringify(entry.metadata ?? {})}::jsonb
+              ${tx.json((entry.metadata ?? {}) as postgres.JSONValue)}
             )
           `;
         }
@@ -265,7 +287,7 @@ export function createCampaignRepository(
     async logAuditEvent(input) {
       await client`
         insert into audit_events (actor_user_id, action, entity_type, entity_id, payload)
-        values (${input.actorUserId}, ${input.action}, ${input.entityType}, ${input.entityId}, ${JSON.stringify(input.payload)}::jsonb)
+        values (${input.actorUserId}, ${input.action}, ${input.entityType}, ${input.entityId}, ${client.json(input.payload as postgres.JSONValue)})
       `;
     },
   };

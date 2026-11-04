@@ -62,11 +62,16 @@ Access/gateway/workerd tests, unit tests, 12 PostgreSQL integration tests, both 
 and four browser tests on each renderer. Actual local WebGL pointer selection and
 desktop/mobile screenshots were reviewed. These checks do not test Roblox or prove fun.
 
-Both dependency audits failed on October 26. Production has a high Zod advisory
+Both dependency audits failed on October 26. Production then had a high Zod advisory
 (`GHSA-mrhx-c7xc-m3w5`); full toolchain has eight findings across Zod, undici and
 fast-uri. This is a refreshed finding against existing dependencies, not a claim
 that the studio introduced the vulnerability. See `dev-environment-state.md`.
 Do not reuse the historical build-only advisory exception for these findings.
+The [November 4 local remediation](dependency-security.md) now passes both audits
+with zero findings and no suppressions, plus nonbrowser functional and Worker
+checks. It changes neither the hosted preview nor merge/deployment approval.
+The coordinator still needs combined-tree/browser verification after reconciling
+the parallel workstreams and the listed shared-contract compatibility edits.
 
 PR #2's GitHub job never started: its check annotation reports an account billing
 lock, with zero executed steps. That is neither a source test failure nor a pass.

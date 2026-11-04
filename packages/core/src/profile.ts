@@ -7,7 +7,7 @@ export const safetyPreferenceSchema = z.object({
 });
 
 export const studentProfileSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   displayName: z.string().min(1),
   interests: z.array(z.string().min(1)).default([]),
   skillBaselines: z.record(z.string(), z.number().min(0).max(100)).default({}),
@@ -16,13 +16,13 @@ export const studentProfileSchema = z.object({
 });
 
 export const parentSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   displayName: z.string().min(1),
-  studentIds: z.array(z.string().uuid()).default([]),
+  studentIds: z.array(z.string().guid()).default([]),
 });
 
 export const educatorSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   displayName: z.string().min(1),
   specialties: z.array(z.string()).default([]),
 });

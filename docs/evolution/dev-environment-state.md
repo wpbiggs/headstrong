@@ -1,7 +1,28 @@
-# Headstrong dev environment — updated 2026-10-26 UTC
+# Headstrong dev environment — local security update 2026-11-04 UTC
 
 This records actual account setup; the general preview runbook remains in
 [`cloudflare-supabase-preview.md`](cloudflare-supabase-preview.md).
+
+## Credential safety gate — 2026-11-04
+
+An earlier local Biome invocation scanned Git-ignored operator configuration and
+printed credential values in formatter diagnostics. No values are reproduced in
+documentation. Biome now respects Git ignore rules; a subsequent sanitized check
+confirmed the credential files are excluded. This prevents recurrence, not use of
+already exposed credentials.
+
+Before further hosted-preview use, obtain approval to rotate the preview JWT
+signing secret and database password, update the protected runtime/connection
+configuration, and revoke affected registered sessions. No rotation or remote
+configuration change occurred in this work. Local synthetic tests use disposable
+fixture credentials and do not need these secrets. Historical preview approval
+does not waive this new gate.
+
+**November 4 release decision:** after an explicit rotation/revocation request,
+the user directed continuation and said they would address this later. Rotation
+and revocation remain unresolved; the user's deferral applies only to the existing
+private synthetic preview release, not production or participant use. No secret
+values are included in the integration commit.
 
 ## Applied and verified
 
@@ -77,6 +98,15 @@ for paid-plan upgrades. The audit finding remains visible and is not suppressed.
 
 ## Deployment gate
 
+**November 4 local remediation:** [dependency security report](dependency-security.md)
+records verified registry evidence, Zod 4 compatibility, same-major transitive
+patches and clean production/full audits (zero findings, no suppressions).
+Lint/types/tests/build and local Worker checks pass. Browser acceptance is left
+to the coordinator because another workstream owns the default fixture ports.
+No deployment or hosted-resource change occurred; the historical deployment
+below still has its original dependency tree. Reconcile the parallel source
+work and rerun checks before separately approving a deployment.
+
 The October 15 deployment was approved with a specific build-time `braces` advisory.
 That historical exception is **not** a blanket acceptance of future findings.
 
@@ -91,8 +121,9 @@ functional checks, but **both audits failed**:
   braces finding. Reports are preserved in the verification artifacts; no findings
   were suppressed and no dependencies silently upgraded.
 
-Do not use the old approval to publish an update with this changed risk. Resolve or
-explicitly review these findings before another deployment. No remote changes were
+Do not use the old approval to publish an update with this changed risk. These
+findings are resolved in the November 4 local lockfile, not on the hosted preview.
+No remote changes were
 made during the learner-studio redesign.
 
 ## Learner studio redesign — source only, not deployed

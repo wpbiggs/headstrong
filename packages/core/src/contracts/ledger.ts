@@ -17,12 +17,12 @@ export const ledgerEntrySchema = z.object({
   direction: ledgerEntryDirectionSchema,
   amount: z.number().positive(),
   currency: z.literal("USD"),
-  campaignId: z.string().uuid().optional(),
+  campaignId: z.string().guid().optional(),
   metadata: z.record(z.string(), z.unknown()).default({}),
 });
 
 export const ledgerTransactionSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().guid(),
   reference: z.string().min(1),
   description: z.string().min(1),
   entries: z.array(ledgerEntrySchema).min(2),
@@ -32,9 +32,9 @@ export const ledgerTransactionSchema = z.object({
 export const campaignStatusSchema = z.enum(["draft", "live", "closed"]);
 
 export const campaignSchema = z.object({
-  id: z.string().uuid(),
-  educatorUserId: z.string().uuid(),
-  createdByUserId: z.string().uuid(),
+  id: z.string().guid(),
+  educatorUserId: z.string().guid(),
+  createdByUserId: z.string().guid(),
   title: z.string().min(1).max(120),
   description: z.string().min(1).max(1000),
   status: campaignStatusSchema,
@@ -42,14 +42,23 @@ export const campaignSchema = z.object({
 });
 
 export const createCampaignRequestSchema = z.object({
-  educatorUserId: z.string().uuid(),
+  educatorUserId: z.string().guid(),
   title: z.string().min(1).max(120),
   description: z.string().min(1).max(1000),
   openingPledgeUsd: z.number().nonnegative().default(0),
 });
 
+export const listCampaignsRequestSchema = z.object({
+  educatorUserId: z.string().guid().optional(),
+  status: campaignStatusSchema.optional(),
+});
+
+export const listCampaignsResponseSchema = z.object({
+  items: z.array(campaignSchema),
+});
+
 export const allocateCampaignRequestSchema = z.object({
-  educatorId: z.string().uuid(),
+  educatorId: z.string().guid(),
   amount: z.number().positive(),
   note: z.string().min(1).max(500),
 });
@@ -62,7 +71,7 @@ export const campaignTotalsSchema = z.object({
 });
 
 export const ledgerHistoryItemSchema = z.object({
-  transactionId: z.string().uuid(),
+  transactionId: z.string().guid(),
   reference: z.string().min(1),
   description: z.string().min(1),
   accountCode: z.string().min(1),
@@ -70,7 +79,7 @@ export const ledgerHistoryItemSchema = z.object({
   amount: z.number().positive(),
   currency: z.literal("USD"),
   createdAt: z.string().datetime(),
-  actorUserId: z.string().uuid().nullable(),
+  actorUserId: z.string().guid().nullable(),
   note: z.string().nullable(),
 });
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OperatorPanel } from "../../components/operator-panel";
 import { fetchCommonsAssetsLive } from "../../lib/live-api";
 
 interface CommonsAssetListItem {
@@ -48,6 +49,24 @@ export default async function CommonsPage({
         <p className="eyebrow">Curriculum Commons</p>
         <h1>Discover, reuse, and remix open learning assets.</h1>
       </section>
+      <OperatorPanel
+        title="Create curriculum asset"
+        description="Publish a new asset directly into the commons."
+        submitLabel="Create asset"
+        mode="commonsCreate"
+        fields={[
+          { name: "email", placeholder: "educator/expert/admin email" },
+          { name: "role", placeholder: "educator" },
+          { name: "title", placeholder: "Fraction Lab Intro" },
+          { name: "slug", placeholder: "fraction-lab-intro" },
+          { name: "summary", placeholder: "Asset summary" },
+          { name: "subject", placeholder: "math" },
+          { name: "gradeBand", placeholder: "3-5" },
+          { name: "license", placeholder: "CC BY 4.0" },
+          { name: "sourceUrl", placeholder: "https://example.com/source" },
+          { name: "tags", placeholder: "fractions,oer" },
+        ]}
+      />
       <section className="grid">
         {(data.items as CommonsAssetListItem[]).map((asset) => (
           <article key={asset.id} className="card">

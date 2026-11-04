@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OperatorPanel } from "../../../components/operator-panel";
 import { fetchCommonsAssetDetailLive } from "../../../lib/live-api";
 
 interface CommonsRelationItem {
@@ -74,6 +75,29 @@ export default async function CommonsAssetPage({
           ))}
         </article>
       </section>
+      <OperatorPanel
+        title="Remix this asset"
+        description="Create a derivative asset while preserving attribution."
+        submitLabel="Create remix"
+        mode="commonsRemix"
+        fields={[
+          {
+            name: "assetId",
+            placeholder: "asset id",
+            defaultValue: detail.asset.id,
+          },
+          { name: "email", placeholder: "educator/expert/admin email" },
+          { name: "role", placeholder: "educator" },
+          { name: "title", placeholder: `${detail.asset.title} Remix` },
+          { name: "slug", placeholder: `${detail.asset.slug}-remix` },
+          { name: "summary", placeholder: "Describe the remix" },
+          {
+            name: "relation",
+            placeholder: "remixed_from",
+            defaultValue: "remixed_from",
+          },
+        ]}
+      />
     </main>
   );
 }

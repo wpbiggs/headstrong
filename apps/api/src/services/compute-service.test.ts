@@ -35,6 +35,7 @@ function createRepositoryFixture() {
         result: null,
         retryCount: 0,
         lastError: null,
+        nextAttemptAt: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -73,6 +74,9 @@ function createRepositoryFixture() {
       };
     },
     async getJobEvents() {
+      return [];
+    },
+    async getProviderRuns() {
       return [];
     },
     async upsertJobResult() {
@@ -159,4 +163,29 @@ test("unauthorized users cannot schedule jobs", async () => {
       return true;
     },
   );
+});
+
+test("compute rejects mismatched task payloads before persisting and gates detail/list reads", async () => {
+  const fixture = createRepositoryFixture();
+  const service = createComputeService(fixture.repository);
+  await assert.rejects(() =>
+    service.scheduleJob(createSessionFixture({}), {
+      version: "v1",
+      type: "inference",
+      payload: { candidate: "wrong shape", rubric: "synthetic" },
+      providerId: "stub",
+      validatorId: "stub",
+    }),
+  );
+  assert.equal(fixture.jobs.size, 0);
+  for (const role of ["student", "parent", "expert"] as const) {
+    await assert.rejects(
+      () => service.getJob(createSessionFixture({ role }), crypto.randomUUID()),
+      /Forbidden/,
+    );
+    await assert.rejects(
+      () => service.listJobs(createSessionFixture({ role }), { limit: 20 }),
+      /Forbidden/,
+    );
+  }
 });

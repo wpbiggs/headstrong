@@ -2,7 +2,10 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: ".",
-  testMatch: ["journey.spec.ts", "studio.spec.ts"],
+  testMatch:
+    process.env.LEARNING_DISABLED_CHECK === "true"
+      ? ["awakening-disabled.spec.ts"]
+      : ["journey.spec.ts", "studio.spec.ts", "awakening.spec.ts"],
   workers: 1,
   reporter: "list",
   use: {
