@@ -133,7 +133,9 @@ export function AwakeningAdventure() {
         <a href="/learn" className="island-brand">
           headstrong <span>/ curiosityverse</span>
         </a>
-        <span className="session-tag">LOCAL ADVENTURE · NOTHING UPLOADED</span>
+        <span className="session-tag">
+          SESSION-ONLY PLAY · SHARE ONLY BY CHOICE
+        </span>
       </header>
       <section className="island-intro">
         <div>

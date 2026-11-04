@@ -71,8 +71,10 @@ polished adult inbox remain separate work; no guardian assessment is fabricated.
 - Reviewed the actual desktop save/feedback screenshot. The initial mobile
   full-page capture repeated portions of the page despite a unique DOM and
   passing width checks; capture coverage now uses separate mobile viewports
-  rather than treating that image as visual proof. A final repeat follows this
-  capture-only test adjustment.
+  rather than treating that image as visual proof. Reviewed both mobile viewport
+  captures: selection preview, connection controls and feedback fit the screen.
+  The capture-adjusted full run passed too. The final release repeat also covers
+  truthful game-header copy after a learner has intentionally shared a discovery.
 - Using a disposable local database and the existing quest/learning services,
   prepared one labelled synthetic Awakening quest, its exact curated task,
   three lifecycle events, one selected learning goal and six audit events. These

@@ -193,6 +193,9 @@ test("explicit adventure save previews only selected flights, rejects unrelated 
   await expect(
     page.getByRole("heading", { name: "You carried the spark." }),
   ).toBeVisible();
+  await expect(page.locator(".session-tag")).toContainText(
+    "SHARE ONLY BY CHOICE",
+  );
   await page
     .getByRole("button", { name: "Save an island discovery (optional)" })
     .click();

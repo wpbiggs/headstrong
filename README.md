@@ -18,6 +18,12 @@ child testing is implied. The inherited fraction workbench remains local-only at
 Combined local workstream evidence and remaining release gates are recorded in
 [`docs/evolution/curiosityverse-integration.md`](docs/evolution/curiosityverse-integration.md).
 
+The [optional adventure-discovery save flow](docs/evolution/awakening-discovery-saving.md)
+previews selected flights/notes before an explicit share to an approved Awakening
+record. It never silently transfers notes to an unrelated quest, gates play or
+awards mastery. Preview-only operator credentials/record setup are still required;
+this is not participant-ready enrollment.
+
 ## Local verification (no CI required)
 
 Cloudflare + Supabase preview preparation is available: run `pnpm verify:cloudflare` for
