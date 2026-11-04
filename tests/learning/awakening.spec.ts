@@ -107,6 +107,8 @@ test("explicit adventure save previews only selected flights, rejects unrelated 
   await expect(page.locator(".discovery-preview")).not.toContainText("PRIVATE");
   await page.getByLabel("Discovery learner token").fill(fixture.tokens.learner);
   await page.getByLabel("Awakening record ID").fill(unrelated.id);
+  await expect(page.getByLabel(/Share completed flights/)).not.toBeChecked();
+  await page.getByLabel(/Share completed flights/).check();
   await page
     .getByRole("button", { name: "Check record / refresh human feedback" })
     .click();

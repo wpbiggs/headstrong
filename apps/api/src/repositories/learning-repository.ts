@@ -1,4 +1,8 @@
-import { type LearningJourney, learningJourneySchema } from "@headstrong/core";
+import {
+  type LearningJourney,
+  type Session,
+  learningJourneySchema,
+} from "@headstrong/core";
 import { type DatabaseClient, getDefaultDatabase } from "../db";
 import { type QuestRepository, createQuestRepository } from "./app-repository";
 
@@ -6,8 +10,18 @@ export interface LearningRepository {
   quests: QuestRepository;
   transaction<T>(work: (repo: LearningRepository) => Promise<T>): Promise<T>;
   createGoal(learnerId: string, objective: string): Promise<LearningJourney>;
+  claimDiscoveryGoal(
+    id: string,
+    learnerId: string,
+    objective: string,
+  ): Promise<{ created: boolean; learnerId: string; submission: boolean }>;
+  listQuestIds(learnerId: string): Promise<string[]>;
+  listGoalIds(user: Session): Promise<string[]>;
   getGoal(id: string, lock?: boolean): Promise<LearningJourney | null>;
-  lockQuest(id: string): ReturnType<QuestRepository["getQuestById"]>;
+  lockQuest(
+    id: string,
+    readOnly?: boolean,
+  ): ReturnType<QuestRepository["getQuestById"]>;
   lockParentLink(parentId: string, studentId: string): Promise<boolean>;
   selectQuest(goalId: string, questId: string): Promise<void>;
   insertEvidence(
@@ -106,8 +120,39 @@ export function createLearningRepository(
           : null,
       });
     },
-    async lockQuest(id: string) {
-      await client`select id from quests where id = ${id} for update`;
+    async claimDiscoveryGoal(id, learnerId, objective) {
+      const rows = await client`
+        insert into learning_goals (id, learner_id, objective, discovery_submission)
+        values (${id}, ${learnerId}, ${objective}, true)
+        on conflict (id) do nothing returning id
+      `;
+      const [row] =
+        await client`select learner_id, discovery_submission from learning_goals where id=${id} for update`;
+      return {
+        created: rows.length > 0,
+        learnerId: row.learner_id,
+        submission: row.discovery_submission,
+      };
+    },
+    async listQuestIds(learnerId) {
+      const rows =
+        await client`select id from quests where student_id=${learnerId}
+        and current_state='live' and needs_educator_review=false
+        order by updated_at desc, id desc limit 10`;
+      return rows.map((row) => row.id);
+    },
+    async listGoalIds(user) {
+      const rows =
+        await client`select g.id from learning_goals g join quests q on q.id=g.quest_id and q.student_id=g.learner_id
+        where q.current_state='live' and q.needs_educator_review=false and (
+          (${user.role}='student' and g.learner_id=${user.sub}) or (
+            ((${user.role}='parent' and q.parent_id=${user.sub}) or (${user.role}='educator' and q.educator_id=${user.sub}))
+            and exists (select 1 from parent_student_links p where p.parent_id=q.parent_id and p.student_id=g.learner_id)
+          )) order by g.created_at desc, g.id desc limit 10`;
+      return rows.map((row) => row.id);
+    },
+    async lockQuest(id: string, readOnly = false) {
+      await client`select id from quests where id = ${id} ${readOnly ? client`for share` : client`for update`}`;
       return quests.getQuestById(id);
     },
     async lockParentLink(parentId: string, studentId: string) {

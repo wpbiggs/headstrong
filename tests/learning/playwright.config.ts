@@ -5,7 +5,12 @@ export default defineConfig({
   testMatch:
     process.env.LEARNING_DISABLED_CHECK === "true"
       ? ["awakening-disabled.spec.ts"]
-      : ["journey.spec.ts", "studio.spec.ts", "awakening.spec.ts"],
+      : [
+          "journey.spec.ts",
+          "studio.spec.ts",
+          "awakening.spec.ts",
+          "discovery-connection.spec.ts",
+        ],
   workers: 1,
   reporter: "list",
   use: {

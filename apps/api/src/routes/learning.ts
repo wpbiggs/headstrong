@@ -1,4 +1,5 @@
 import {
+  learningDiscoveryInputSchema,
   learningEvidenceInputSchema,
   learningFeedbackInputSchema,
   learningGoalInputSchema,
@@ -52,6 +53,23 @@ export function createLearningRoutes(
   });
   const idValidator = zValidator("param", z.object({ id: z.string().guid() }));
   return app
+    .get("/quests", async (c) =>
+      c.json(await service.listQuests(c.get("user"))),
+    )
+    .get("/goals", async (c) =>
+      c.json(await service.listRecords(c.get("user"))),
+    )
+    .post(
+      "/discoveries",
+      zValidator("json", learningDiscoveryInputSchema),
+      async (c) => {
+        const result = await service.shareDiscovery(
+          c.get("user"),
+          c.req.valid("json"),
+        );
+        return c.json(result, result.replayed ? 200 : 201);
+      },
+    )
     .post("/goals", zValidator("json", learningGoalInputSchema), async (c) =>
       c.json(await service.createGoal(c.get("user"), c.req.valid("json")), 201),
     )

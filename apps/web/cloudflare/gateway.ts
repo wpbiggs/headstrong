@@ -42,7 +42,9 @@ export async function previewGateway(
         !/^\/learning\/goals(?:\/[a-f0-9-]{36}(?:\/(?:quest|evidence|feedback|guardian-feedback|satisfaction))?)?$/.test(
           path,
         ) &&
-        path !== "/auth/logout"
+        path !== "/auth/logout" &&
+        path !== "/learning/quests" &&
+        path !== "/learning/discoveries"
       )
         return fail("Not found.", 404);
       // Construct a fresh request: never forward Access JWTs, cookies or identity headers.

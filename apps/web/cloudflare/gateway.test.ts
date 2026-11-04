@@ -5,6 +5,62 @@ import { verifyAccessClaims, verifyPreviewAccess } from "./access";
 import { type PreviewGateway, previewGateway } from "./gateway";
 import { renderPreviewRequest } from "./render";
 
+test("discovery connection forwards only exact authenticated routes and strips Access identity", async () => {
+  const origin = "https://preview.example.test";
+  const forwarded: string[] = [];
+  const options: PreviewGateway = {
+    enabled: true,
+    verify: async () => "operator",
+    limit: async () => ({ success: true }),
+    web: async () => new Response(),
+    api: async (request) => {
+      forwarded.push(new URL(request.url).pathname);
+      assert.equal(request.headers.get("cookie"), null);
+      assert.equal(request.headers.get("Cf-Access-Jwt-Assertion"), null);
+      return Response.json({ items: [] });
+    },
+  };
+  for (const path of [
+    "/learning/quests",
+    "/learning/goals",
+    "/learning/discoveries",
+  ]) {
+    const make = (suffix = "", source = origin) =>
+      new Request(`${origin}/api${path}${suffix}`, {
+        method: path.endsWith("discoveries") ? "POST" : "GET",
+        headers: {
+          Origin: source,
+          cookie: "private",
+          "Cf-Access-Jwt-Assertion": "private",
+        },
+      });
+    assert.equal((await previewGateway(make(), options)).status, 200);
+    assert.equal((await previewGateway(make("/extra"), options)).status, 404);
+    assert.equal(
+      (
+        await previewGateway(make(), {
+          ...options,
+          verify: async () => {
+            throw new Error("denied");
+          },
+        })
+      ).status,
+      401,
+    );
+    if (path.endsWith("discoveries"))
+      assert.equal(
+        (await previewGateway(make("", "https://attacker.test"), options))
+          .status,
+        403,
+      );
+  }
+  assert.deepEqual(forwarded, [
+    "/learning/quests",
+    "/learning/goals",
+    "/learning/discoveries",
+  ]);
+});
+
 test("guardian feedback uses only the exact authenticated same-origin learning route", async () => {
   const origin = "https://preview.example.test";
   const path =

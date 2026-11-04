@@ -128,6 +128,49 @@ test("preview DB role, RLS and API preserve the learning loop without browser da
     }),
   });
   assert.equal(created.status, 201);
+  const catalog = await (
+    await app.request("/learning/quests", { headers })
+  ).json();
+  const approved = catalog.items.find(
+    (item: { questId: string }) => item.questId === fixture.questId,
+  );
+  assert.ok(approved);
+  const discovery = {
+    submissionId: randomUUID(),
+    questId: fixture.questId,
+    scene: approved.scene,
+    reflection: "I compared equal pieces and tried a different arrangement.",
+    observedEntityIds: [fixture.task.scenePlan.entities[0].id],
+  };
+  for (const status of [201, 200])
+    assert.equal(
+      (
+        await app.request("/learning/discoveries", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(discovery),
+        })
+      ).status,
+      status,
+    );
+  const choices = await (
+    await app.request("/learning/goals", { headers })
+  ).json();
+  assert.ok(
+    choices.items.some(
+      (item: { id: string }) => item.id === discovery.submissionId,
+    ),
+  );
+  assert.equal(
+    (
+      await client`select discovery_submission from learning_goals where id=${discovery.submissionId}`
+    )[0].discovery_submission,
+    true,
+  );
+  await assert.rejects(
+    client`update learning_goals set discovery_submission=false where id=${discovery.submissionId}`,
+    /permission denied/,
+  );
   const goal = await created.json();
   const path = `/learning/goals/${goal.id}`;
   const selected = await app.request(`${path}/quest`, {

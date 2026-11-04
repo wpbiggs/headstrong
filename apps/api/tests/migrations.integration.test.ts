@@ -25,10 +25,10 @@ test("migration history serializes runners, rolls back failed DDL, verifies chec
   ]);
   assert.equal(
     results.reduce((sum, result) => sum + result.applied.length, 0),
-    15,
+    16,
   );
   await writeFile(
-    path.join(temporary, "0016_probe.sql"),
+    path.join(temporary, "0017_probe.sql"),
     "create table migration_probe (id int); select missing_column from users;",
   );
   await assert.rejects(runMigrations(db.client, temporary), /missing_column/);
@@ -37,21 +37,21 @@ test("migration history serializes runners, rolls back failed DDL, verifies chec
   assert.equal(probe.name, null);
   assert.equal(
     (await db.client`select * from headstrong_migrations`).length,
-    15,
+    16,
   );
   await writeFile(
-    path.join(temporary, "0016_probe.sql"),
+    path.join(temporary, "0017_probe.sql"),
     "create table migration_probe (id int);",
   );
   assert.deepEqual((await runMigrations(db.client, temporary)).applied, [
-    "0016_probe.sql",
+    "0017_probe.sql",
   ]);
   await writeFile(
-    path.join(temporary, "0016_probe.sql"),
+    path.join(temporary, "0017_probe.sql"),
     "create table migration_probe (id text);",
   );
   await writeFile(
-    path.join(temporary, "0017_later.sql"),
+    path.join(temporary, "0018_later.sql"),
     "create table should_not_apply (id int);",
   );
   await assert.rejects(

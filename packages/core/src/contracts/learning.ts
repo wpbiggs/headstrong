@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { experienceSpecSchema } from "./experience";
 import { portfolioArtifactSchema } from "./portfolio";
+import { scenePlanSchema } from "./scene";
 
 export const learningGoalInputSchema = z.object({
   objective: z.string().trim().min(5).max(500),
@@ -12,6 +13,13 @@ export const learningEvidenceInputSchema = z.object({
   reflection: z.string().trim().min(10).max(2000),
   observedEntityIds: z.array(z.string().min(1).max(200)).min(1).max(24),
 });
+export const learningDiscoveryInputSchema = learningEvidenceInputSchema
+  .extend({
+    submissionId: z.string().guid().toLowerCase(),
+    questId: z.string().guid().toLowerCase(),
+    scene: scenePlanSchema,
+  })
+  .strict();
 export const learningFeedbackInputSchema = z.object({
   assessment: z.enum(["demonstrated", "needs_practice"]),
   comment: z.string().trim().min(5).max(2000),
@@ -58,6 +66,29 @@ export const learningJourneySchema = z.object({
 export const learningJourneyDetailSchema = z.object({
   journey: learningJourneySchema,
   experience: experienceSpecSchema.nullable(),
+});
+export const learningDiscoveryReceiptSchema = z.object({
+  detail: learningJourneyDetailSchema,
+  replayed: z.boolean(),
+});
+export const learningQuestChoicesSchema = z.object({
+  items: z.array(experienceSpecSchema).max(10),
+});
+export const learningRecordChoicesSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        id: z.string().guid(),
+        objective: learningGoalInputSchema.shape.objective,
+        questId: z.string().guid(),
+        templateId: z.string(),
+        createdAt: z.string().datetime(),
+        hasEvidence: z.boolean(),
+        hasEducatorFeedback: z.boolean(),
+        hasGuardianFeedback: z.boolean(),
+      }),
+    )
+    .max(10),
 });
 
 export type LearningJourney = z.infer<typeof learningJourneySchema>;

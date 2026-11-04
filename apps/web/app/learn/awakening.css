@@ -301,8 +301,18 @@
 }
 .connected-record {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
   min-height: 90vh;
+}
+.connected-record > * {
+  min-width: 0;
+}
+.connected-record select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .connected-record input,
 .connected-record textarea,

@@ -3,11 +3,16 @@ import {
   type LearningJourney,
   type Session,
   experienceSpecSchema,
+  learningDiscoveryInputSchema,
+  learningDiscoveryReceiptSchema,
   learningEvidenceInputSchema,
   learningFeedbackInputSchema,
   learningGoalInputSchema,
   learningGuardianFeedbackInputSchema,
   learningJourneyDetailSchema,
+  learningJourneySchema,
+  learningQuestChoicesSchema,
+  learningRecordChoicesSchema,
   learningSatisfactionInputSchema,
   selectLearningQuestSchema,
 } from "@headstrong/core";
@@ -41,10 +46,45 @@ function requireSafeText(text: string) {
   }
 }
 
-async function approvedQuest(repo: LearningRepository, goal: LearningJourney) {
+const discoveryObjective =
+  "Explore, experiment, and share an optional discovery.";
+function discoveryGoal(user: Session, questId: string, id = randomUUID()) {
+  return learningJourneySchema.parse({
+    id,
+    learnerId: user.sub,
+    objective: discoveryObjective,
+    questId,
+    createdAt: new Date().toISOString(),
+    evidence: null,
+    feedback: null,
+    satisfaction: null,
+  });
+}
+function validateObservations(
+  spec: { scene: { entities: { id: string }[] } },
+  observed: string[],
+) {
+  const ids = new Set(observed);
+  if (
+    ids.size !== observed.length ||
+    [...ids].some(
+      (id) => !spec.scene.entities.some((entity) => entity.id === id),
+    )
+  )
+    throw new LearningError(
+      "Observation does not belong to this experience.",
+      422,
+    );
+}
+
+async function approvedQuest(
+  repo: LearningRepository,
+  goal: LearningJourney,
+  readOnly = false,
+) {
   if (!goal.questId)
     throw new LearningError("Select an approved quest first.", 409);
-  const quest = await repo.lockQuest(goal.questId);
+  const quest = await repo.lockQuest(goal.questId, readOnly);
   if (!quest || quest.studentId !== goal.learnerId) {
     throw new LearningError("Quest is unavailable.", 409);
   }
@@ -81,9 +121,12 @@ async function authorizeRead(
   repo: LearningRepository,
   user: Session,
   goal: LearningJourney,
+  readOnly = false,
 ) {
   if (user.role === "student" && user.sub === goal.learnerId) return;
-  const quest = goal.questId ? await repo.lockQuest(goal.questId) : null;
+  const quest = goal.questId
+    ? await repo.lockQuest(goal.questId, readOnly)
+    : null;
   if (
     quest &&
     user.role === "educator" &&
@@ -152,6 +195,138 @@ export function createLearningService(
   }
 
   return {
+    async listQuests(user: Session) {
+      requireLearner(user);
+      return repository.transaction(async (repo) => {
+        const items = [];
+        for (const questId of await repo.listQuestIds(user.sub)) {
+          const goal = discoveryGoal(user, questId);
+          try {
+            await approvedQuest(repo, goal, true);
+            items.push(await experienceFor(repo, goal));
+          } catch (error) {
+            if (!(error instanceof LearningError && error.status === 409))
+              throw error;
+          }
+        }
+        await repo.quests.logAuditEvent({
+          actorUserId: user.sub,
+          entityId: user.sub,
+          entityType: "learning_catalog",
+          action: "learning_quest_choices_read",
+          payload: {},
+        });
+        return learningQuestChoicesSchema.parse({ items });
+      });
+    },
+    async listRecords(user: Session) {
+      if (!["student", "parent", "educator"].includes(user.role))
+        throw new LearningError(
+          "Learning record discovery is unavailable for this role.",
+          403,
+        );
+      return repository.transaction(async (repo) => {
+        const items = [];
+        for (const id of await repo.listGoalIds(user)) {
+          const goal = await repo.getGoal(id);
+          if (!goal) continue;
+          try {
+            await authorizeRead(repo, user, goal, true);
+            await approvedQuest(repo, goal, true);
+            const spec = await experienceFor(repo, goal);
+            items.push({
+              id: goal.id,
+              objective: goal.objective,
+              questId: spec.questId,
+              templateId: spec.scene.templateId,
+              createdAt: goal.createdAt,
+              hasEvidence: !!goal.evidence,
+              hasEducatorFeedback: !!goal.feedback,
+              hasGuardianFeedback: !!goal.guardianFeedback,
+            });
+          } catch (error) {
+            if (
+              !(
+                error instanceof LearningError &&
+                [403, 409].includes(error.status)
+              )
+            )
+              throw error;
+          }
+        }
+        await repo.quests.logAuditEvent({
+          actorUserId: user.sub,
+          entityId: user.sub,
+          entityType: "learning_catalog",
+          action: "learning_record_choices_read",
+          payload: {},
+        });
+        return learningRecordChoicesSchema.parse({ items });
+      });
+    },
+    async shareDiscovery(user: Session, input: unknown) {
+      requireLearner(user);
+      const parsed = learningDiscoveryInputSchema.parse(input);
+      requireSafeText(parsed.reflection);
+      return repository.transaction(async (repo) => {
+        const claim = await repo.claimDiscoveryGoal(
+          parsed.submissionId,
+          user.sub,
+          discoveryObjective,
+        );
+        if (claim.learnerId !== user.sub || !claim.submission)
+          throw new LearningError("Submission ID is unavailable.", 409);
+        const goal = await repo.getGoal(parsed.submissionId, true);
+        if (!goal) throw new LearningError("Submission unavailable.", 409);
+        if (!claim.created && goal.questId !== parsed.questId)
+          throw new LearningError(
+            "This submission ID was already used for a different discovery.",
+            409,
+          );
+        const linked = { ...goal, questId: parsed.questId };
+        await approvedQuest(repo, linked);
+        const spec = await experienceFor(repo, linked);
+        if (JSON.stringify(spec.scene) !== JSON.stringify(parsed.scene))
+          throw new LearningError(
+            "The approved scene changed. Recheck the adventure before sharing.",
+            409,
+          );
+        validateObservations(spec, parsed.observedEntityIds);
+        if (claim.created) {
+          await repo.selectQuest(goal.id, parsed.questId);
+          await repo.insertEvidence(linked, {
+            id: randomUUID(),
+            kind: "text",
+            questId: spec.questId,
+            taskId: spec.taskId,
+            reflection: parsed.reflection,
+            observedEntityIds: parsed.observedEntityIds,
+            submittedAt: new Date().toISOString(),
+          });
+          for (const action of [
+            "learning_goal_created",
+            "learning_quest_selected",
+            "learning_evidence_submitted",
+          ])
+            await audit(repo, user, goal.id, action);
+        } else if (
+          !goal.evidence ||
+          goal.evidence.reflection !== parsed.reflection ||
+          JSON.stringify([...goal.evidence.observedEntityIds].sort()) !==
+            JSON.stringify([...parsed.observedEntityIds].sort())
+        ) {
+          throw new LearningError(
+            "This submission ID was already used for a different discovery.",
+            409,
+          );
+        }
+        const updated = await repo.getGoal(goal.id);
+        return learningDiscoveryReceiptSchema.parse({
+          detail: { journey: updated, experience: spec },
+          replayed: !claim.created,
+        });
+      });
+    },
     async createGoal(user: Session, input: unknown) {
       requireLearner(user);
       const { objective } = learningGoalInputSchema.parse(input);
@@ -206,19 +381,7 @@ export function createLearningService(
           throw new LearningError("Evidence is already submitted.", 409);
         await approvedQuest(repo, goal);
         const spec = await experienceFor(repo, goal);
-        const ids = new Set(parsed.observedEntityIds);
-        if (
-          ids.size !== parsed.observedEntityIds.length ||
-          [...ids].some(
-            (entityId) =>
-              !spec.scene.entities.some((entity) => entity.id === entityId),
-          )
-        ) {
-          throw new LearningError(
-            "Observation does not belong to this experience.",
-            422,
-          );
-        }
+        validateObservations(spec, parsed.observedEntityIds);
         await repo.insertEvidence(goal, {
           id: randomUUID(),
           kind: "text",

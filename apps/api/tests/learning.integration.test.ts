@@ -17,7 +17,7 @@ test("PostgreSQL + Hono learning journey: scoped, ordered, atomic and immutable"
   const db = await createDisposableDatabase();
   t.after(() => db.cleanup());
   const directory = fileURLToPath(new URL("../migrations", import.meta.url));
-  assert.equal((await runMigrations(db.client, directory)).applied.length, 15);
+  assert.equal((await runMigrations(db.client, directory)).applied.length, 16);
   assert.deepEqual((await runMigrations(db.client, directory)).applied, []);
   const fixture = await seedLearningFixture(db.client);
   const repository = createLearningRepository(db.client);
@@ -45,6 +45,141 @@ test("PostgreSQL + Hono learning journey: scoped, ordered, atomic and immutable"
   assert.equal(goalResponse.status, 201);
   const goal = await goalResponse.json();
   const path = `/goals/${goal.id}`;
+  await t.test(
+    "authorized catalogs and atomic discovery sharing preserve privacy and retry safety",
+    async () => {
+      assert.equal((await request("admin", "/goals")).status, 403);
+      assert.equal((await request("parent", "/quests")).status, 403);
+      assert.deepEqual(
+        (await (await request("stranger", "/quests")).json()).items,
+        [],
+      );
+      const choices = await (await request("learner", "/quests")).json();
+      assert.equal(choices.items.length, 1);
+      const body = {
+        submissionId: crypto.randomUUID(),
+        questId: fixture.questId,
+        scene: choices.items[0].scene,
+        reflection: "I tried comparing two different observations.",
+        observedEntityIds: [fixture.task.scenePlan.entities[0].id],
+      };
+      const replies = await Promise.all([
+        request("learner", "/discoveries", body),
+        request("learner", "/discoveries", body),
+      ]);
+      assert.deepEqual(replies.map((r) => r.status).sort(), [200, 201]);
+      assert.equal(
+        (
+          await request("learner", "/discoveries", {
+            ...body,
+            submissionId: body.submissionId.toUpperCase(),
+            questId: body.questId.toUpperCase(),
+          })
+        ).status,
+        200,
+      );
+      assert.equal(
+        (
+          await request("learner", "/discoveries", {
+            ...body,
+            reflection: "A different selection must not replace the first.",
+          })
+        ).status,
+        409,
+      );
+      assert.equal(
+        (
+          await request("learner", "/discoveries", {
+            ...body,
+            submissionId: goal.id,
+          })
+        ).status,
+        409,
+      );
+      assert.equal(
+        (await request("stranger", "/discoveries", body)).status,
+        409,
+      );
+      assert.equal((await request("parent", "/discoveries", body)).status, 403);
+      for (const actor of ["learner", "parent", "educator"]) {
+        const records = await (await request(actor, "/goals")).json();
+        assert.equal(records.items.length, 1);
+        assert.equal(records.items[0].id, body.submissionId);
+        assert.equal("reflection" in records.items[0], false);
+        assert.equal("evidence" in records.items[0], false);
+      }
+      for (const actor of ["stranger", "otherEducator"])
+        assert.deepEqual(
+          (await (await request(actor, "/goals")).json()).items,
+          [],
+        );
+      const failedId = crypto.randomUUID();
+      assert.equal(
+        (
+          await request("learner", "/discoveries", {
+            ...body,
+            submissionId: failedId,
+            observedEntityIds: ["foreign-entity"],
+          })
+        ).status,
+        422,
+      );
+      assert.equal(await repository.getGoal(failedId), null);
+      const stale = { ...body.scene, templateId: "changed-scene" };
+      assert.equal(
+        (
+          await request("learner", "/discoveries", {
+            ...body,
+            submissionId: failedId,
+            scene: stale,
+          })
+        ).status,
+        409,
+      );
+      assert.equal(await repository.getGoal(failedId), null);
+      await db.client`update quests set needs_educator_review=true where id=${fixture.questId}`;
+      assert.deepEqual(
+        (await (await request("learner", "/quests")).json()).items,
+        [],
+      );
+      assert.deepEqual(
+        (await (await request("parent", "/goals")).json()).items,
+        [],
+      );
+      assert.equal(
+        (await request("learner", "/discoveries", body)).status,
+        409,
+      );
+      await db.client`update quests set needs_educator_review=false where id=${fixture.questId}`;
+      const broken = createLearningService({
+        ...repository,
+        transaction: (work) =>
+          repository.transaction((tx) =>
+            work({
+              ...tx,
+              quests: {
+                ...tx.quests,
+                logAuditEvent: async () => {
+                  throw new Error("share audit failure");
+                },
+              },
+            }),
+          ),
+      });
+      await assert.rejects(
+        broken.shareDiscovery(fixture.sessions.learner, {
+          ...body,
+          submissionId: failedId,
+        }),
+        /share audit failure/,
+      );
+      assert.equal(await repository.getGoal(failedId), null);
+      assert.equal(
+        (await db.client`select count(*)::int as n from mastery_signals`)[0].n,
+        0,
+      );
+    },
+  );
   await t.test("privacy and role boundaries", async () => {
     for (const actor of [
       "stranger",

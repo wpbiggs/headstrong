@@ -3,6 +3,7 @@
 import {
   type LearningJourneyDetail,
   learningJourneyDetailSchema,
+  learningRecordChoicesSchema,
 } from "@headstrong/core";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { ExperiencePlayer } from "./experience-player";
@@ -14,15 +15,29 @@ export function LearningJourneyPanel() {
   useEffect(() => setReady(true), []);
   const [token, setToken] = useState("");
   const [goalId, setGoalId] = useState("");
+  const [records, setRecords] = useState<
+    ReturnType<typeof learningRecordChoicesSchema.parse>["items"]
+  >([]);
   const [detail, setDetail] = useState<LearningJourneyDetail | null>(null);
   const [observed, setObserved] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [stopped, setStopped] = useState(false);
   const sessionEpoch = useRef(0);
+  const activeRequest = useRef<AbortController | null>(null);
+  useEffect(
+    () => () => {
+      sessionEpoch.current += 1;
+      activeRequest.current?.abort();
+    },
+    [],
+  );
 
   async function request(path: string, body?: unknown) {
     const epoch = sessionEpoch.current;
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
     const response = await fetch(`${apiUrl}/learning${path}`, {
       method: body === undefined ? "GET" : "POST",
       headers: {
@@ -31,6 +46,7 @@ export function LearningJourneyPanel() {
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       cache: "no-store",
+      signal: controller.signal,
     });
     const result = await response.json();
     if (epoch !== sessionEpoch.current)
@@ -50,6 +66,7 @@ export function LearningJourneyPanel() {
   async function submit(event: FormEvent<HTMLFormElement>, action: string) {
     event.preventDefault();
     const values = new FormData(event.currentTarget);
+    const epoch = sessionEpoch.current;
     setBusy(true);
     setError("");
     try {
@@ -90,16 +107,20 @@ export function LearningJourneyPanel() {
         await refresh(goalId);
       }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Request failed.");
+      if (epoch === sessionEpoch.current)
+        setError(reason instanceof Error ? reason.message : "Request failed.");
     } finally {
-      setBusy(false);
+      if (epoch === sessionEpoch.current) setBusy(false);
     }
   }
 
   function reset() {
     sessionEpoch.current += 1;
+    activeRequest.current?.abort();
+    setBusy(false);
     setToken("");
     setGoalId("");
+    setRecords([]);
     setDetail(null);
     setObserved([]);
     setError("");
@@ -124,8 +145,13 @@ export function LearningJourneyPanel() {
             value={token}
             onChange={(event) => {
               sessionEpoch.current += 1;
+              activeRequest.current?.abort();
+              setBusy(false);
+              setError("");
               setToken(event.target.value);
               setDetail(null);
+              setGoalId("");
+              setRecords([]);
               setObserved([]);
             }}
           />
@@ -133,14 +159,64 @@ export function LearningJourneyPanel() {
         <button type="button" onClick={reset}>
           Clear session and stop
         </button>
+        <button
+          type="button"
+          disabled={busy || !token}
+          onClick={async () => {
+            const epoch = sessionEpoch.current;
+            setBusy(true);
+            setError("");
+            try {
+              setRecords(
+                learningRecordChoicesSchema.parse(await request("/goals"))
+                  .items,
+              );
+            } catch (reason) {
+              if (epoch === sessionEpoch.current)
+                setError(
+                  reason instanceof Error ? reason.message : "Request failed.",
+                );
+            } finally {
+              if (epoch === sessionEpoch.current) setBusy(false);
+            }
+          }}
+        >
+          Find authorized discovery records
+        </button>
+        <label>
+          Authorized discovery records
+          <select
+            aria-label="Authorized discovery records"
+            disabled={busy}
+            value={records.some((item) => item.id === goalId) ? goalId : ""}
+            onChange={(e) => {
+              setGoalId(e.target.value);
+              setDetail(null);
+              setObserved([]);
+            }}
+          >
+            <option value="">Choose a record</option>
+            {records.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.objective} · {item.id.slice(0, 8)}
+                {item.hasEvidence ? " · discovery saved" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
         <form onSubmit={(event) => submit(event, "load")}>
           <label>
             Goal ID{" "}
             <input
               aria-label="Goal ID"
               name="goalId"
+              disabled={busy}
               required
-              defaultValue={goalId}
+              value={goalId}
+              onChange={(e) => {
+                setGoalId(e.target.value);
+                setDetail(null);
+              }}
             />
           </label>
           <button disabled={busy || !token} type="submit">
