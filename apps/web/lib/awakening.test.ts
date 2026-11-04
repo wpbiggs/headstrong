@@ -13,6 +13,88 @@ import {
 } from "./awakening";
 import { discoverySummary, isAwakeningRecord } from "./awakening-discovery";
 import { sampleExperience } from "./sample-experience";
+import { newSeedGarden, seedGardenReducer, seedTrial } from "./seedwind";
+
+test("seed shape and wind independently change dispersal, every bed can grow without a flight", () => {
+  assert.deepEqual(seedTrial("round", "shelter"), {
+    shape: "round",
+    breeze: "shelter",
+    distance: 2,
+    bed: "cove",
+  });
+  assert.equal(seedTrial("round", "ridge").distance, 5);
+  assert.equal(seedTrial("feathered", "shelter").distance, 6);
+  assert.equal(seedTrial("feathered", "ridge").distance, 14);
+  let island = newIsland();
+  island = islandReducer(island, { type: "sow-seed" });
+  assert.equal(island.garden.beds.cove, 1);
+  island = islandReducer(island, { type: "seed-shape", shape: "feathered" });
+  island = islandReducer(island, { type: "sow-seed" });
+  assert.equal(island.garden.beds.slope, 1);
+  island = islandReducer(island, { type: "seed-breeze", breeze: "ridge" });
+  island = islandReducer(island, { type: "sow-seed" });
+  assert.equal(island.garden.beds.terrace, 1);
+  assert.equal(island.restored, false);
+  assert.equal(island.flight.phase, "ready");
+  assert.deepEqual(island.attempts, []);
+});
+
+test("seed garden is bounded, paused atomically, persistent across flight retries and cleared by reset", () => {
+  let garden = newSeedGarden();
+  for (let i = 0; i < 100; i++)
+    garden = seedGardenReducer(garden, { type: "sow-seed" });
+  assert.equal(garden.beds.cove, 3);
+  assert.equal(garden.trials.length, 4);
+  const paused = { ...newIsland(), garden, paused: true };
+  for (const action of [
+    { type: "seed-shape", shape: "feathered" },
+    { type: "seed-breeze", breeze: "ridge" },
+    { type: "sow-seed" },
+  ] as const)
+    assert.equal(islandReducer(paused, action), paused);
+  const flown = finish({ ...paused, paused: false });
+  assert.deepEqual(islandReducer(flown, { type: "retry" }).garden, garden);
+  assert.deepEqual(
+    islandReducer(paused, { type: "reset" }).garden,
+    newSeedGarden(),
+  );
+});
+
+test("garden sharing is separate opt-in, excludes unselected notes/flights and fits evidence bounds", () => {
+  const seeds = Array.from({ length: 4 }, () =>
+    seedTrial("feathered", "ridge"),
+  );
+  assert.equal(
+    discoverySummary([], "private note", false, false, seeds, false),
+    "",
+  );
+  const chosen = discoverySummary(
+    finish(newIsland()).attempts,
+    "private note",
+    false,
+    false,
+    seeds,
+    true,
+  );
+  assert.match(chosen, /Selected seed releases/);
+  assert.match(chosen, /14 m · terrace bed/);
+  assert.doesNotMatch(chosen, /private note|Selected flights/);
+  const maximal = discoverySummary(
+    Array(6).fill(finish(newIsland()).attempts[0]),
+    "x".repeat(500),
+    true,
+    true,
+    seeds,
+    true,
+  );
+  assert.equal(
+    learningEvidenceInputSchema.safeParse({
+      reflection: maximal,
+      observedEntityIds: ["workshop"],
+    }).success,
+    true,
+  );
+});
 
 test("discovery selection is explicit, bounded and not an assessment", () => {
   const attempts = finish(newIsland()).attempts;

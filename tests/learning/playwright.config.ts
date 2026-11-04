@@ -10,6 +10,7 @@ export default defineConfig({
           "studio.spec.ts",
           "awakening.spec.ts",
           "discovery-connection.spec.ts",
+          "seedwind.spec.ts",
         ],
   workers: 1,
   reporter: "list",

@@ -293,6 +293,55 @@
   display: grid;
   gap: 16px;
 }
+.seedwind-garden {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--island-line);
+  padding: 28px 0;
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.seedwind-garden fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.seedwind-garden legend {
+  margin-bottom: 10px;
+}
+.seedwind-beds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.seedwind-bed {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 16px 10px;
+  background: #183843;
+  overflow-wrap: anywhere;
+}
+.seedwind-bed.growing {
+  background: #214b41;
+}
+.seedwind-bed > span:first-child {
+  color: #f5ce82;
+  min-height: 2em;
+}
+.seedwind-bed > span:last-child {
+  font-size: .8rem;
+}
+.seedwind-result {
+  display: block;
+  color: #b9e6cf;
+}
+.seedwind-trials {
+  padding-left: 22px;
+  margin: 0;
+  color: #b9cece;
+}
 .island-footer p {
   font-size: .8rem;
 }

@@ -15,15 +15,18 @@ import {
   discoverySummary,
   isAwakeningRecord,
 } from "../lib/awakening-discovery";
+import type { SeedTrial } from "../lib/seedwind";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export function DiscoverySavePanel({
   attempts,
+  seedTrials = [],
   note,
   onBack,
 }: {
   attempts: Attempt[];
+  seedTrials?: SeedTrial[];
   note: string;
   onBack: () => void;
 }) {
@@ -31,6 +34,7 @@ export function DiscoverySavePanel({
   const [goalId, setGoalId] = useState("");
   const [flights, setFlights] = useState(false);
   const [notes, setNotes] = useState(false);
+  const [seeds, setSeeds] = useState(false);
   const [detail, setDetail] = useState<LearningJourneyDetail | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -47,7 +51,14 @@ export function DiscoverySavePanel({
   const active = useRef<AbortController | null>(null);
   const epoch = useRef(0);
   const lock = useRef(false);
-  const summary = discoverySummary(attempts, note, flights, notes);
+  const summary = discoverySummary(
+    attempts,
+    note,
+    flights,
+    notes,
+    seedTrials,
+    seeds,
+  );
 
   useEffect(
     () => () => {
@@ -218,6 +229,15 @@ export function DiscoverySavePanel({
           />{" "}
           Share my optional island note
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={seeds}
+            disabled={!seedTrials.length}
+            onChange={(event) => setSeeds(event.target.checked)}
+          />{" "}
+          Share seed experiments ({seedTrials.length})
+        </label>
       </fieldset>
       <h2>Exactly what will be shared</h2>
       <pre className="discovery-preview">
@@ -254,6 +274,7 @@ export function DiscoverySavePanel({
               setGoalId("");
               setFlights(false);
               setNotes(false);
+              setSeeds(false);
               submission.current = null;
               setToken(e.target.value);
             }}

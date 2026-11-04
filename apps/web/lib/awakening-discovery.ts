@@ -1,11 +1,14 @@
 import type { LearningJourneyDetail } from "@headstrong/core";
 import { type Attempt, awakeningExperience } from "./awakening";
+import type { SeedTrial } from "./seedwind";
 
 export function discoverySummary(
   attempts: Attempt[],
   note: string,
   includeFlights: boolean,
   includeNote: boolean,
+  seedTrials: SeedTrial[] = [],
+  includeSeeds = false,
 ) {
   const parts: string[] = [];
   if (includeFlights && attempts.length)
@@ -18,6 +21,10 @@ export function discoverySummary(
         .join("\n")}`,
     );
   if (includeNote && note.trim()) parts.push(`My discovery: ${note.trim()}`);
+  if (includeSeeds && seedTrials.length)
+    parts.push(
+      `Selected seed releases (toy dispersal model):\n${seedTrials.map((trial) => `${trial.shape} seed · ${trial.breeze} breeze · ${trial.distance} m · ${trial.bed} bed`).join("\n")}`,
+    );
   if (!parts.length) return "";
   return `The Awakening — learner-selected observations, not proof of mastery.\n\n${parts.join("\n\n")}`;
 }

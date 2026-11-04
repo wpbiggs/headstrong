@@ -10,6 +10,7 @@ import {
 import { mountAwakening } from "../lib/playcanvas-awakening";
 import { DiscoverySavePanel } from "./discovery-save-panel";
 import { LearningJourneyPanel } from "./learning-journey-panel";
+import { SeedwindGarden } from "./seedwind-garden";
 
 export function AwakeningAdventure() {
   const [island, dispatch] = useReducer(islandReducer, undefined, newIsland);
@@ -102,6 +103,7 @@ export function AwakeningAdventure() {
     return (
       <DiscoverySavePanel
         attempts={island.attempts}
+        seedTrials={island.garden.trials}
         note={note}
         onBack={() => setSaving(false)}
       />
@@ -177,7 +179,7 @@ export function AwakeningAdventure() {
         {playing ? (
           <canvas
             ref={canvas}
-            aria-label="Glider, Lumiling and observatory; equivalent text and controls below"
+            aria-label="Glider, Lumiling, observatory and seed garden; equivalent text and controls below"
           />
         ) : (
           <div className="island-rest">
@@ -384,11 +386,16 @@ export function AwakeningAdventure() {
           )}
         </aside>
       </div>
+      <SeedwindGarden
+        garden={island.garden}
+        disabled={!ready || !playing}
+        dispatch={dispatch}
+      />
       <footer className="island-footer">
         <p>
           Synthetic, session-only play. Reset or reload clears this tab’s
-          flights and notes, not discoveries you chose to save. No score or
-          automatic mastery. No account is needed to play.
+          flights, garden and notes, not discoveries you chose to save. No score
+          or automatic mastery. No account is needed to play.
         </p>
         <div>
           <button

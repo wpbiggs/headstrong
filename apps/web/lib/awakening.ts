@@ -1,4 +1,10 @@
 import { experienceSpecSchema } from "@headstrong/core";
+import {
+  type SeedAction,
+  type SeedGarden,
+  newSeedGarden,
+  seedGardenReducer,
+} from "./seedwind";
 
 // Curated synthetic content, not a quest authorization or persisted learner record.
 // v1 supplies the portable scene/content envelope. Flight rules stay local to this
@@ -82,6 +88,7 @@ export type Attempt = Pick<Flight, "wing" | "distance" | "reached"> & {
   route: string;
 };
 export type Island = {
+  garden: SeedGarden;
   flight: Flight;
   attempts: Attempt[];
   restored: boolean;
@@ -90,6 +97,7 @@ export type Island = {
   wind: boolean;
 };
 export type IslandAction =
+  | SeedAction
   | { type: "wing"; wing: Wing }
   | { type: "steer"; lane: Lane }
   | {
@@ -114,6 +122,7 @@ const readyFlight = (wing: Wing = "wide", lane: Lane = -1): Flight => ({
   reached: false,
 });
 export const newIsland = (): Island => ({
+  garden: newSeedGarden(),
   flight: readyFlight(),
   attempts: [],
   restored: false,
@@ -131,6 +140,10 @@ export function islandReducer(state: Island, action: IslandAction): Island {
   if (state.paused) return state;
   const f = state.flight;
   switch (action.type) {
+    case "seed-shape":
+    case "seed-breeze":
+    case "sow-seed":
+      return { ...state, garden: seedGardenReducer(state.garden, action) };
     case "wing":
       return f.phase === "ready"
         ? { ...state, flight: { ...f, wing: action.wing } }

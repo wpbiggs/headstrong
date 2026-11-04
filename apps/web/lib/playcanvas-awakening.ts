@@ -142,6 +142,62 @@ export async function mountAwakening(
         sleeping,
       );
     });
+    const seedBeds = (["cove", "slope", "terrace"] as const).map(
+      (bed, index) => {
+        const x = -5 + index * 2;
+        const z = -3 - index * 3.5;
+        shape(
+          `${bed} seed islet`,
+          "cylinder",
+          [x, -0.7, z],
+          [2.5, 0.8, 2.2],
+          stone,
+        );
+        shape(
+          `${bed} sleeping soil`,
+          "cylinder",
+          [x, -0.25, z],
+          [2.5, 0.15, 2.2],
+          bark,
+        );
+        const clumps = Array.from({ length: 3 }, (_, i) => {
+          const plant = new pc.Entity(`${bed} seed clump ${i + 1}`);
+          plant.setLocalPosition(
+            x + (i - 1) * 0.65,
+            -0.1,
+            z + (i === 1 ? -0.3 : 0.2),
+          );
+          app.root.addChild(plant);
+          shape(
+            "Seedling stem",
+            "cylinder",
+            [0, 0.35, 0],
+            [0.09, 0.7, 0.09],
+            leaf,
+            plant,
+          );
+          shape(
+            "Seedling leaves",
+            "cone",
+            [0, 0.45, 0],
+            [0.55, 0.55, 0.5],
+            leaf,
+            plant,
+          );
+          shape(
+            "Seedling blossom",
+            "sphere",
+            [0, 0.8, 0],
+            [0.35, 0.3, 0.35],
+            sail,
+            plant,
+          );
+          plant.enabled = false;
+          return plant;
+        });
+        return { bed, clumps };
+      },
+    );
     const creature = shape(
       "Lumiling",
       "sphere",
@@ -195,6 +251,9 @@ export async function mountAwakening(
     app.on("update", () => {
       const s = read();
       const f = s.flight;
+      for (const { bed, clumps } of seedBeds)
+        for (let i = 0; i < clumps.length; i++)
+          clumps[i].enabled = i < s.garden.beds[bed];
       const x = f.lane * 2.4;
       glider.setPosition(
         x,
