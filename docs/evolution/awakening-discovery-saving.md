@@ -1,7 +1,7 @@
 # Optional Awakening discovery saving
 
-Status: locally accepted private synthetic-preview increment; deployment is
-recorded below. Not participant-ready or complete account onboarding.
+Status: pushed and deployed to the existing owner-only synthetic preview.
+Not participant-ready or complete account onboarding.
 
 ## Experience contract
 
@@ -101,3 +101,28 @@ The previously deferred credential-exposure risk remains open. This feature does
 not rotate exposed credentials or revoke existing affected sessions. Guardian
 replies, simple enrollment, richer adventure duration and hosted 3D visual review
 remain product/release work; do not equate these tests with the full goal.
+
+## Deployment receipt
+
+- Source: `2b28af5`, including discovery implementation `d6f8c35`, pushed on
+  `feat/curiosityverse-local-integration` without a default-branch merge.
+- Final exact-source `pnpm verify:cloudflare` passed all 17 gates after the last
+  copy/capture adjustments. No source changes followed it; only evidence docs.
+- Web Worker version: `785cba3c-902d-49de-9ac9-cc7a75bf1ba2`, deployed from the
+  verified Vite output. API code/config was unchanged and was not redeployed.
+- URL: <https://headstrong-preview-web.wbiggers60.workers.dev/learn>.
+- Rechecked owner-only Access policy, synthetic flag, API service binding and
+  nonpublic API settings before deployment. Post-deploy signed-out HTML, actual
+  new adventure JS and API requests redirect to Access; direct API returns 404.
+- The authenticated hosted browser renders the new truthful sharing header and
+  optional save button. Opening the panel shows empty selections, no selected
+  text and a disabled Share action; returning restores the paused island and
+  Resume returns to play without a record or reflection. No page errors observed.
+- The hosted save UI itself was not exercised with a bearer token: the full UI
+  flow passed against real local PostgreSQL on both renderers, while the actual
+  deployed private API passed the separately recorded synthetic checks above.
+  Do not present these as a single hosted-browser end-to-end test.
+- For the outstanding 3D check, the scoped native probe found OpenChamber running
+  but no accessible window; the separate Chrome tool reached an unauthenticated
+  Cloudflare login. That agent tab was closed without reading credentials or
+  bypassing Access. Hosted 3D visual fidelity still needs owner-browser review.

@@ -40,6 +40,13 @@ Older source-only and hosted-state sections below are historical, not the curren
 deployed version. Adventure notes still are not saved through the separate evidence
 workspace; the release does not imply the full game-first product is complete.
 
+**Follow-up:** the explicit optional adventure-save bridge is now deployed from
+`2b28af5`, web version `785cba3c-902d-49de-9ac9-cc7a75bf1ba2`. See
+[discovery-saving receipt](awakening-discovery-saving.md) for exact checks,
+synthetic quest/record setup, protected short-lived demo credentials and remaining
+acceptance limitations. The older no-bridge statement above describes the initial
+release, not this follow-up. Default play still uploads nothing automatically.
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).
