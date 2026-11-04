@@ -250,6 +250,12 @@ uploads notes, infers mastery or grants account/content authorization.
 
 ## Follow-up: trusted guardian encouragement
 
+**Adventure follow-up:** [Seedwind garden](seedwind-garden.md) adds independent
+seed-shape/breeze experiments and growing world patches without flight completion,
+quizzes or reflection. Optional garden sharing is separate and unchecked. Its
+receipt includes the current objective audit rather than treating this bounded
+second activity as a finished learning world.
+
 **Later connection follow-up:** [approved discovery connection](approved-discovery-connection.md)
 adds authorized adventure/record pickers and atomic retry-safe sharing without
 pre-created goals. It remains behind optional saving and does not change default

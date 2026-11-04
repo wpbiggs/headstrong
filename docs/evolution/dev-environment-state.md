@@ -63,6 +63,14 @@ and 25 hosted API checks passed. Access remains private and synthetic-only. See
 [connection receipt](approved-discovery-connection.md); token provisioning,
 full hosted-browser acceptance and hosted 3D visual fidelity remain unfinished.
 
+**Seedwind follow-up:** source `275b030` adds an optional second workshop
+experiment with seed shape, breeze and growing island beds. Current web:
+`84574caa-63d5-4e5c-98c5-68a5ebdcce32`; API/schema unchanged. All 17 release
+gates and 26 browser runs passed, including explicit seed-only saving and no-WebGL
+play. Hosted browser verified contrasting 2/6/14 m outcomes and three growing text
+patches without a flight or account token. See [garden receipt](seedwind-garden.md)
+for full scope and the remaining hosted visual/enrollment/safeguarding limitations.
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).

@@ -1,6 +1,7 @@
 # Seedwind garden adventure
 
-Status: local release acceptance passed; private-preview deployment pending.
+Status: pushed and deployed to the existing owner-only synthetic preview.
+Not real-participant or production approval.
 
 ## Adventure, not another form
 
@@ -63,3 +64,40 @@ about seed play is still not proof of a learning outcome.
 No database migration, API behavior, account policy or Access change is needed.
 Enrollment, full hosted-browser save/reply acceptance, hosted 3D visual fidelity,
 deferred credential rotation and a polished longer adventure remain unfinished.
+
+## Hosted rollout receipt
+
+- Verified source `275b030` pushed on the integration branch; no default-branch
+  merge. Deployed web from the verified generated output, version
+  `84574caa-63d5-4e5c-98c5-68a5ebdcce32`. API remains
+  `2c0049fe-8af1-439a-8de8-a560967487ca`; no schema/API/account changes were made.
+- In the refreshed authenticated hosted browser, released round/gentle for 2 m,
+  changed only shape for feathered/gentle at 6 m, then only breeze for
+  feathered/ridge at 14 m. All three text garden patches grew one clump while
+  flight remained unstarted and the beacon stayed asleep.
+- Opened optional saving: `Share seed experiments (3)` was present, nothing was
+  selected, the preview said nothing selected, and Share was disabled. Returned
+  to the paused island. Hosted token-entry/save/reply was not exercised; local
+  end-to-end saving and prior hosted API acceptance remain separate evidence.
+- Signed-out HTML, the actual new adventure JS bundle and the share path still
+  redirect to Access; direct API workers.dev returns 404. Access policy and
+  synthetic-only flags were not broadened. No new test sessions were provisioned
+  or private records written for this frontend-only rollout.
+
+## Objective audit
+
+- Adventure-first entry: retained and covered by local/hosted browser evidence.
+- Meaningful choices: wing/route/steering plus independently variable seed shape
+  and breeze now produce reproducible, contrasting consequences.
+- Experiments change the world: beacon/star garden and new soil-bed seedlings
+  render locally; matching hosted text-state changes verified. Hosted 3D visual
+  fidelity is still unproven, not inferred from a ready label.
+- No mandatory quizzes/reflections: garden and flight work before session setup
+  or evidence submission, including keyboard/touch/WebGL-failure cases.
+- Optional trusted feedback: selected observations use existing atomic saving
+  and human feedback. No game action writes mastery. Full hosted-browser
+  save/reply acceptance remains unfinished.
+- Safe platform support: current prototype controls remain, but complete
+  enrollment, real-child safeguarding and deferred credential rotation are not
+  established by this release. A polished world/longer adventure is still a
+  product gap, so the whole objective is not declared complete.
