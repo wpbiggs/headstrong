@@ -22,6 +22,10 @@ export interface LearningRepository {
     goalId: string,
     input: NonNullable<LearningJourney["satisfaction"]>,
   ): Promise<void>;
+  insertGuardianFeedback(
+    goalId: string,
+    input: NonNullable<LearningJourney["guardianFeedback"]>,
+  ): Promise<void>;
 }
 
 function mapGoal(row: Record<string, unknown>): LearningJourney {
@@ -34,6 +38,7 @@ function mapGoal(row: Record<string, unknown>): LearningJourney {
     evidence: row.evidence ?? null,
     feedback: row.feedback ?? null,
     satisfaction: row.satisfaction ?? null,
+    guardianFeedback: row.guardian_feedback ?? null,
   });
 }
 
@@ -63,11 +68,13 @@ export function createLearningRepository(
         select * from learning_goals where id = ${id} ${lock ? client`for update` : client``}
       `;
       if (!row) return null;
-      const [evidence, feedback, satisfaction] = await Promise.all([
-        client`select * from learning_evidence where goal_id = ${id}`,
-        client`select * from learning_feedback where goal_id = ${id}`,
-        client`select enjoyment, agency, challenge from learning_satisfaction where goal_id = ${id}`,
-      ]);
+      const [evidence, feedback, satisfaction, guardianFeedback] =
+        await Promise.all([
+          client`select * from learning_evidence where goal_id = ${id}`,
+          client`select * from learning_feedback where goal_id = ${id}`,
+          client`select enjoyment, agency, challenge from learning_satisfaction where goal_id = ${id}`,
+          client`select guardian_id, comment, created_at from learning_guardian_feedback where goal_id = ${id}`,
+        ]);
       return mapGoal({
         ...row,
         evidence: evidence[0]
@@ -90,6 +97,13 @@ export function createLearningRepository(
             }
           : null,
         satisfaction: satisfaction[0] ?? null,
+        guardian_feedback: guardianFeedback[0]
+          ? {
+              guardianId: guardianFeedback[0].guardian_id,
+              comment: guardianFeedback[0].comment,
+              createdAt: new Date(guardianFeedback[0].created_at).toISOString(),
+            }
+          : null,
       });
     },
     async lockQuest(id: string) {
@@ -132,6 +146,12 @@ export function createLearningRepository(
       await client`
         insert into learning_satisfaction (goal_id, enjoyment, agency, challenge)
         values (${goalId}, ${input.enjoyment}, ${input.agency}, ${input.challenge})
+      `;
+    },
+    async insertGuardianFeedback(goalId, feedback) {
+      await client`
+        insert into learning_guardian_feedback (goal_id, guardian_id, comment)
+        values (${goalId}, ${feedback.guardianId}, ${feedback.comment})
       `;
     },
   };

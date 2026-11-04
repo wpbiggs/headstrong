@@ -2,6 +2,7 @@ import {
   learningEvidenceInputSchema,
   learningFeedbackInputSchema,
   learningGoalInputSchema,
+  learningGuardianFeedbackInputSchema,
   learningSatisfactionInputSchema,
   selectLearningQuestSchema,
 } from "@headstrong/core";
@@ -91,6 +92,20 @@ export function createLearningRoutes(
       async (c) =>
         c.json(
           await service.submitFeedback(
+            c.get("user"),
+            c.req.valid("param").id,
+            c.req.valid("json"),
+          ),
+          201,
+        ),
+    )
+    .post(
+      "/goals/:id/guardian-feedback",
+      idValidator,
+      zValidator("json", learningGuardianFeedbackInputSchema),
+      async (c) =>
+        c.json(
+          await service.submitGuardianFeedback(
             c.get("user"),
             c.req.valid("param").id,
             c.req.valid("json"),

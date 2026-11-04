@@ -248,6 +248,13 @@ implementation, exact tests, synthetic provisioning and deployment evidence.
 Default play and the legacy saved workspace remain independent. No game action
 uploads notes, infers mastery or grants account/content authorization.
 
+## Follow-up: trusted guardian encouragement
+
+[Guardian encouragement](guardian-feedback.md) adds a separate supportive reply,
+not another assessment or a new game requirement. Its receipt governs current
+verification/rollout state. Default adventure entry, world changes and optional
+discovery selection remain independent of adult comments and ratings.
+
 Platform crash recovery, transactional finalization/allocations, token-aware
 operator interfaces, complete verified OAuth/LTI flows and real-child safeguards
 remain outside this bounded milestone. Keep their documented release blockers;

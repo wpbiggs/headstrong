@@ -39,7 +39,7 @@ export async function previewGateway(
         return fail("Cross-origin writes are forbidden.", 403);
       const path = url.pathname.slice(4);
       if (
-        !/^\/learning\/goals(?:\/[a-f0-9-]{36}(?:\/(?:quest|evidence|feedback|satisfaction))?)?$/.test(
+        !/^\/learning\/goals(?:\/[a-f0-9-]{36}(?:\/(?:quest|evidence|feedback|guardian-feedback|satisfaction))?)?$/.test(
           path,
         ) &&
         path !== "/auth/logout"

@@ -16,6 +16,17 @@ export const learningFeedbackInputSchema = z.object({
   assessment: z.enum(["demonstrated", "needs_practice"]),
   comment: z.string().trim().min(5).max(2000),
 });
+export const learningGuardianFeedbackInputSchema = z.strictObject({
+  comment: z
+    .string()
+    .trim()
+    .min(5)
+    .max(2000)
+    .refine(
+      (value) => Array.from(value).length >= 5,
+      "Use at least five characters.",
+    ),
+});
 export const learningSatisfactionInputSchema = z.object({
   enjoyment: z.number().int().min(1).max(5),
   agency: z.number().int().min(1).max(5),
@@ -38,6 +49,10 @@ export const learningJourneySchema = z.object({
   feedback: learningFeedbackInputSchema
     .extend({ educatorId: z.string().guid(), createdAt: z.string().datetime() })
     .nullable(),
+  guardianFeedback: learningGuardianFeedbackInputSchema
+    .extend({ guardianId: z.string().guid(), createdAt: z.string().datetime() })
+    .nullable()
+    .default(null),
   satisfaction: learningSatisfactionInputSchema.nullable(),
 });
 export const learningJourneyDetailSchema = z.object({

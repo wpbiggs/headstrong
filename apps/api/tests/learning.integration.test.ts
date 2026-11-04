@@ -17,7 +17,7 @@ test("PostgreSQL + Hono learning journey: scoped, ordered, atomic and immutable"
   const db = await createDisposableDatabase();
   t.after(() => db.cleanup());
   const directory = fileURLToPath(new URL("../migrations", import.meta.url));
-  assert.equal((await runMigrations(db.client, directory)).applied.length, 14);
+  assert.equal((await runMigrations(db.client, directory)).applied.length, 15);
   assert.deepEqual((await runMigrations(db.client, directory)).applied, []);
   const fixture = await seedLearningFixture(db.client);
   const repository = createLearningRepository(db.client);
@@ -128,6 +128,128 @@ test("PostgreSQL + Hono learning journey: scoped, ordered, atomic and immutable"
     );
   });
   await t.test(
+    "guardian replies are scoped, safe, independent of assessment and immutable under concurrency",
+    async () => {
+      const body = {
+        comment:
+          "I enjoyed seeing you try another idea. What might you explore next?",
+      };
+      for (const actor of [
+        "learner",
+        "stranger",
+        "otherEducator",
+        "educator",
+        "admin",
+      ])
+        assert.equal(
+          (await request(actor, `${path}/guardian-feedback`, body)).status,
+          403,
+        );
+      for (const forged of [
+        { ...body, guardianId: fixture.users.parent.id },
+        { ...body, assessment: "demonstrated" },
+        { comment: " " },
+        { comment: "🙂🙂🙂" },
+      ])
+        assert.equal(
+          (await request("parent", `${path}/guardian-feedback`, forged)).status,
+          400,
+        );
+      assert.equal(
+        (
+          await request("parent", `${path}/guardian-feedback`, {
+            comment: "Please dm me",
+          })
+        ).status,
+        422,
+      );
+      assert.equal(
+        (await request("parent", `${path}/guardian-feedback`, body)).status,
+        409,
+      );
+      const separate = await service.createGoal(fixture.sessions.learner, {
+        objective: "Compare two ideas without needing an assessment",
+      });
+      await service.selectQuest(fixture.sessions.learner, separate.id, {
+        questId: fixture.questId,
+      });
+      await service.submitEvidence(fixture.sessions.learner, separate.id, {
+        reflection: "I compared the two objects and tried a new idea.",
+        observedEntityIds: [fixture.task.scenePlan.entities[0].id],
+      });
+      await db.client`update quests set needs_educator_review=true where id=${fixture.questId}`;
+      assert.equal(
+        (
+          await request(
+            "parent",
+            `/goals/${separate.id}/guardian-feedback`,
+            body,
+          )
+        ).status,
+        409,
+      );
+      await db.client`update quests set needs_educator_review=false where id=${fixture.questId}`;
+      const brokenReply = createLearningService({
+        ...repository,
+        transaction: (work) =>
+          repository.transaction((tx) =>
+            work({
+              ...tx,
+              quests: {
+                ...tx.quests,
+                logAuditEvent: async () => {
+                  throw new Error("guardian audit failure");
+                },
+              },
+            }),
+          ),
+      });
+      await assert.rejects(
+        brokenReply.submitGuardianFeedback(
+          fixture.sessions.parent,
+          separate.id,
+          body,
+        ),
+        /guardian audit failure/,
+      );
+      assert.equal(
+        (
+          await db.client`select count(*)::int as n from learning_guardian_feedback where goal_id=${separate.id}`
+        )[0].n,
+        0,
+      );
+      const replies = await Promise.all([
+        request("parent", `/goals/${separate.id}/guardian-feedback`, body),
+        request("parent", `/goals/${separate.id}/guardian-feedback`, body),
+      ]);
+      assert.deepEqual(replies.map((r) => r.status).sort(), [201, 409]);
+      for (const actor of ["learner", "parent", "educator"]) {
+        const detail = await (
+          await request(actor, `/goals/${separate.id}`)
+        ).json();
+        assert.equal(detail.journey.guardianFeedback.comment, body.comment);
+        assert.equal(
+          detail.journey.guardianFeedback.guardianId,
+          fixture.users.parent.id,
+        );
+        assert.equal(detail.journey.feedback, null);
+        assert.equal(detail.journey.satisfaction, null);
+      }
+      assert.equal(
+        (await db.client`select count(*)::int as n from mastery_signals`)[0].n,
+        0,
+      );
+      assert.equal(
+        (
+          await request("parent", `/goals/${separate.id}/guardian-feedback`, {
+            comment: "Replace the original reply",
+          })
+        ).status,
+        409,
+      );
+    },
+  );
+  await t.test(
     "concurrent submissions serialize, then teacher and learner complete loop",
     async () => {
       const input = {
@@ -212,6 +334,14 @@ test("PostgreSQL + Hono learning journey: scoped, ordered, atomic and immutable"
       );
       assert.equal((await request("parent", path)).status, 403);
       assert.equal((await request("educator", path)).status, 403);
+      assert.equal(
+        (
+          await request("parent", `${path}/guardian-feedback`, {
+            comment: "This must be refused after unlinking",
+          })
+        ).status,
+        403,
+      );
       const detail = await (await request("learner", path)).json();
       assert.equal(detail.experience, null);
       assert.equal(

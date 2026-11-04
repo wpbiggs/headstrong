@@ -6,6 +6,7 @@ import {
   learningEvidenceInputSchema,
   learningFeedbackInputSchema,
   learningGoalInputSchema,
+  learningGuardianFeedbackInputSchema,
   learningJourneyDetailSchema,
   learningSatisfactionInputSchema,
   selectLearningQuestSchema,
@@ -265,6 +266,29 @@ export function createLearningService(
           );
         await repo.insertSatisfaction(id, parsed);
         await audit(repo, user, id, "learning_satisfaction_submitted");
+      });
+    },
+    async submitGuardianFeedback(user: Session, id: string, input: unknown) {
+      const parsed = learningGuardianFeedbackInputSchema.parse(input);
+      requireSafeText(parsed.comment);
+      return mutate(user, id, async (repo, goal) => {
+        const quest = await approvedQuest(repo, goal);
+        if (user.role !== "parent" || user.sub !== quest.parentId)
+          throw new LearningError(
+            "Only the currently linked guardian may leave a supportive reply.",
+            403,
+          );
+        if (!goal.evidence || goal.guardianFeedback)
+          throw new LearningError(
+            "A guardian reply requires a saved discovery and may be submitted once.",
+            409,
+          );
+        await repo.insertGuardianFeedback(id, {
+          ...parsed,
+          guardianId: user.sub,
+          createdAt: new Date().toISOString(),
+        });
+        await audit(repo, user, id, "learning_guardian_feedback_submitted");
       });
     },
   };

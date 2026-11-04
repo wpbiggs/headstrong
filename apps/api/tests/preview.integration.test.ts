@@ -56,6 +56,15 @@ test("preview DB role, RLS and API preserve the learning loop without browser da
   try {
     await provisioner.unsafe(security);
     await provisioner.unsafe(security); // repeatable provisioning
+    const guardianUpgrade = await readFile(
+      new URL(
+        "../../../infra/supabase/guardian-feedback-preview.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    await provisioner.unsafe(guardianUpgrade);
+    await provisioner.unsafe(guardianUpgrade);
   } finally {
     provisioner.release();
   }
@@ -136,6 +145,60 @@ test("preview DB role, RLS and API preserve the learning loop without browser da
     }),
   });
   assert.equal(evidence.status, 201);
+  const guardianHeaders = {
+    ...headers,
+    Authorization: `Bearer ${fixture.tokens.parent}`,
+  };
+  assert.equal(
+    (
+      await app.request(`${path}/guardian-feedback`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          comment: "A learner must not impersonate a guardian",
+        }),
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (
+      await app.request(`${path}/guardian-feedback`, {
+        method: "POST",
+        headers: guardianHeaders,
+        body: JSON.stringify({
+          comment: "I noticed your experiment. Keep exploring your ideas.",
+        }),
+      })
+    ).status,
+    201,
+  );
+  assert.equal(
+    (
+      await app.request(`${path}/guardian-feedback`, {
+        method: "POST",
+        headers: guardianHeaders,
+        body: JSON.stringify({
+          comment: "Overwrite the first supportive reply",
+        }),
+      })
+    ).status,
+    409,
+  );
+  const guardianDetail = await (await app.request(path, { headers })).json();
+  assert.equal(guardianDetail.journey.feedback, null);
+  assert.match(
+    guardianDetail.journey.guardianFeedback.comment,
+    /Keep exploring/,
+  );
+  await assert.rejects(
+    client`update learning_guardian_feedback set comment = 'Direct overwrite refused' where goal_id = ${goal.id}`,
+    /permission denied/,
+  );
+  await assert.rejects(
+    client`delete from learning_guardian_feedback where goal_id = ${goal.id}`,
+    /permission denied/,
+  );
   assert.equal(
     (
       await app.request(`${path}/feedback`, {

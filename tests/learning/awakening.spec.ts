@@ -201,6 +201,54 @@ test("explicit adventure save previews only selected flights, rejects unrelated 
     .click();
   await expect(page.getByLabel("Discovery learner token")).toHaveValue("");
   await expect(page.getByLabel(/Share completed flights/)).not.toBeChecked();
+  await page.getByRole("button", { name: /Back to paused island/ }).click();
+  await page.getByRole("button", { name: "Connect saved workspace" }).click();
+  await page
+    .getByLabel("Bearer token", { exact: true })
+    .fill(fixture.tokens.parent);
+  await page
+    .getByLabel("Goal ID", { exact: true })
+    .fill(fixture.adventureGoalId);
+  await page
+    .getByRole("button", { name: "Load journey / refresh feedback" })
+    .click();
+  await page
+    .getByLabel("Guardian reply", { exact: true })
+    .fill("I enjoyed seeing you try a new idea. What could you explore next?");
+  await page
+    .getByRole("button", { name: "Send guardian encouragement once" })
+    .click();
+  await expect(
+    page.getByText("I enjoyed seeing you try a new idea.", { exact: false }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Send guardian encouragement once" }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "← Back to paused island", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Save an island discovery (optional)" })
+    .click();
+  await page.getByLabel("Discovery learner token").fill(fixture.tokens.learner);
+  await page.getByLabel("Awakening record ID").fill(fixture.adventureGoalId);
+  await page
+    .getByRole("button", { name: "Check record / refresh human feedback" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Guardian encouragement", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("heading", { name: "Guardian encouragement", exact: true })
+    .scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: "test-results/guardian-encouragement-mobile.png",
+    fullPage: false,
+    mask: [page.getByLabel("Discovery learner token")],
+  });
+  await expect(
+    page.getByText("I enjoyed seeing you try a new idea.", { exact: false }),
+  ).toBeVisible();
   expect(
     await page.evaluate(() => [
       Object.keys(localStorage),

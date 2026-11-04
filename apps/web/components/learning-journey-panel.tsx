@@ -74,16 +74,18 @@ export function LearningJourneyPanel() {
                   reflection: values.get("reflection"),
                   observedEntityIds: observed,
                 }
-              : action === "feedback"
-                ? {
-                    assessment: values.get("assessment"),
-                    comment: values.get("comment"),
-                  }
-                : {
-                    enjoyment: Number(values.get("enjoyment")),
-                    agency: Number(values.get("agency")),
-                    challenge: Number(values.get("challenge")),
-                  };
+              : action === "guardian-feedback"
+                ? { comment: values.get("comment") }
+                : action === "feedback"
+                  ? {
+                      assessment: values.get("assessment"),
+                      comment: values.get("comment"),
+                    }
+                  : {
+                      enjoyment: Number(values.get("enjoyment")),
+                      agency: Number(values.get("agency")),
+                      challenge: Number(values.get("challenge")),
+                    };
         await request(`/goals/${goalId}/${action}`, payload);
         await refresh(goalId);
       }
@@ -287,6 +289,36 @@ export function LearningJourneyPanel() {
                   disabled={busy || !detail.journey.evidence}
                 >
                   Submit educator feedback
+                </button>
+              </form>
+            )}
+          </section>
+          <section className="card">
+            <h2>Guardian encouragement (optional)</h2>
+            <p>
+              A supportive reply, not an assessment or proof of mastery. Only
+              the currently linked guardian can send it; the learner and
+              assigned educator can read it. Playing never requires a reply.
+            </p>
+            {detail.journey.guardianFeedback ? (
+              <p>{detail.journey.guardianFeedback.comment}</p>
+            ) : (
+              <form onSubmit={(event) => submit(event, "guardian-feedback")}>
+                <label>
+                  Guardian reply
+                  <textarea
+                    aria-label="Guardian reply"
+                    name="comment"
+                    required
+                    minLength={5}
+                    maxLength={2000}
+                  />
+                </label>
+                <button
+                  type="submit"
+                  disabled={busy || !detail.journey.evidence}
+                >
+                  Send guardian encouragement once
                 </button>
               </form>
             )}

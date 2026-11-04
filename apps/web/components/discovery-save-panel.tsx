@@ -244,6 +244,15 @@ export function DiscoverySavePanel({
             <p>{detail.journey.feedback.comment}</p>
           </section>
         )}
+        {detail?.journey.guardianFeedback && (
+          <section>
+            <h2>Guardian encouragement</h2>
+            <p>{detail.journey.guardianFeedback.comment}</p>
+            <p>
+              This supportive reply is not an assessment or proof of mastery.
+            </p>
+          </section>
+        )}
       </section>
     </main>
   );

@@ -36,7 +36,7 @@ do $$ declare table_name text; browser_role text; begin
     'mastery_signals', 'lms_sync_events', 'campaigns', 'ledger_transactions', 'ledger_entries',
     'compute_jobs', 'curriculum_assets', 'curriculum_asset_edges', 'curriculum_asset_impacts',
     'compute_job_events', 'compute_job_results', 'provider_runs', 'learning_goals',
-    'learning_evidence', 'learning_feedback', 'learning_satisfaction', 'auth_sessions',
+    'learning_evidence', 'learning_feedback', 'learning_guardian_feedback', 'learning_satisfaction', 'auth_sessions',
     'headstrong_migrations'
   ] loop
     execute format('alter table public.%I enable row level security', table_name);
@@ -53,7 +53,7 @@ do $$ declare table_name text; browser_role text; begin
   -- browser identities have neither table grants nor RLS policies.
   foreach table_name in array array[
     'users', 'parent_student_links', 'quests', 'quest_tasks', 'quest_events', 'auth_sessions',
-    'audit_events', 'learning_goals', 'learning_evidence', 'learning_feedback', 'learning_satisfaction'
+    'audit_events', 'learning_goals', 'learning_evidence', 'learning_feedback', 'learning_guardian_feedback', 'learning_satisfaction'
   ] loop
     execute format('drop policy if exists headstrong_server_only on public.%I', table_name);
     execute format('create policy headstrong_server_only on public.%I to headstrong_preview_api using (true) with check (true)', table_name);
@@ -61,8 +61,8 @@ do $$ declare table_name text; browser_role text; begin
 end $$;
 
 grant select on users, parent_student_links, quests, quest_tasks, quest_events, auth_sessions,
-  learning_goals, learning_evidence, learning_feedback, learning_satisfaction to headstrong_preview_api;
-grant insert on audit_events, learning_goals, learning_evidence, learning_feedback, learning_satisfaction to headstrong_preview_api;
+  learning_goals, learning_evidence, learning_feedback, learning_guardian_feedback, learning_satisfaction to headstrong_preview_api;
+grant insert on audit_events, learning_goals, learning_evidence, learning_feedback, learning_guardian_feedback, learning_satisfaction to headstrong_preview_api;
 grant update (quest_id) on learning_goals to headstrong_preview_api;
 grant update (revoked_at) on auth_sessions to headstrong_preview_api;
 -- PostgreSQL row locks require UPDATE privilege; no approval/role fields are writable.

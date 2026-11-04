@@ -5,6 +5,56 @@ import { verifyAccessClaims, verifyPreviewAccess } from "./access";
 import { type PreviewGateway, previewGateway } from "./gateway";
 import { renderPreviewRequest } from "./render";
 
+test("guardian feedback uses only the exact authenticated same-origin learning route", async () => {
+  const origin = "https://preview.example.test";
+  const path =
+    "/api/learning/goals/00000000-0000-4000-8000-000000000011/guardian-feedback";
+  let calls = 0;
+  const options: PreviewGateway = {
+    enabled: true,
+    verify: async () => "operator",
+    limit: async () => ({ success: true }),
+    web: async () => new Response(),
+    api: async (request) => {
+      calls++;
+      assert.equal(request.url, `https://private-api${path.slice(4)}`);
+      assert.equal(request.headers.get("cookie"), null);
+      assert.equal(request.headers.get("Cf-Access-Jwt-Assertion"), null);
+      assert.deepEqual(await request.json(), { comment: "A supportive reply" });
+      return Response.json({ saved: true }, { status: 201 });
+    },
+  };
+  const make = (suffix = "", source = origin) =>
+    new Request(origin + path + suffix, {
+      method: "POST",
+      headers: {
+        Origin: source,
+        "Content-Type": "application/json",
+        cookie: "private",
+        "Cf-Access-Jwt-Assertion": "not-forwarded",
+      },
+      body: JSON.stringify({ comment: "A supportive reply" }),
+    });
+  assert.equal((await previewGateway(make(), options)).status, 201);
+  assert.equal((await previewGateway(make("/extra"), options)).status, 404);
+  assert.equal(
+    (await previewGateway(make("", "https://attacker.test"), options)).status,
+    403,
+  );
+  assert.equal(
+    (
+      await previewGateway(make(), {
+        ...options,
+        verify: async () => {
+          throw new Error("invalid");
+        },
+      })
+    ).status,
+    401,
+  );
+  assert.equal(calls, 1);
+});
+
 test("authenticated build assets use ASSETS while journey HTML uses vinext", async () => {
   const assets = {
     fetch: async () =>
