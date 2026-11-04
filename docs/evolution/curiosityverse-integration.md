@@ -179,8 +179,9 @@ use**. No remote credential changes were made.
   74 primary tests, 7 additional tests, 17 PostgreSQL tests, 14 browser runs,
   Worker runtime/access tests and both zero-finding dependency audits.
 - Removed the adventure footer link to the local-only fraction workbench rather
-  than expanding the hosted gateway allowlist. A final verification follows this
-  UI adjustment.
+  than expanding the hosted gateway allowlist. Final verification after this UI
+  adjustment passed all 17 gates again, including all 14 browser tests and both
+  zero-finding audits.
 - Asked explicitly about rotating the exposed preview credentials and revoking
   sessions. User chose to defer: “it's ok, please continue. i will address this
   later”. This accepts the unresolved risk only for the requested private preview;
@@ -188,6 +189,34 @@ use**. No remote credential changes were made.
 - Adventure discovery notes remain session-only and are not transferred to the
   separate authorized evidence workspace. Direct optional discovery saving and
   polished adventure duration remain product gaps, not release claims.
+
+### Private preview deployment
+
+- Source commit `dbf1855` was pushed to
+  `origin/feat/curiosityverse-local-integration`. No default branch or existing
+  draft PR was merged; original dirty worktrees are preserved.
+- API deployed first: `2540eb51-7536-4266-9ab1-08dfad9e3858`.
+- Web deployed from the final verified Vite-generated configuration/output:
+  `ec5f58a4-cf51-4c52-ab6a-b6dfe1b94092`.
+- URL: <https://headstrong-preview-web.wbiggers60.workers.dev/learn>.
+- Rechecked the live Access policy: only the existing owner email and identity
+  provider, one-hour session, no bypass. API workers.dev and both version URLs
+  remain disabled. Both Workers retain `PREVIEW_SYNTHETIC_DATA_ONLY=true`.
+- Post-deploy signed-out HTML, actual bundled CSS and learning API requests
+  redirect to Access; the direct API URL returns 404. Authenticated hosted play
+  opens directly into The Awakening without token/goal/reflection entry. Swept
+  wings on shelter land at 35 m; changing only the route reaches 70 m and updates
+  beacon/garden state without completing a quiz or submitting evidence.
+- Browser panel capture returned a black WebGL region despite the ready status;
+  do not treat that capture as proof of hosted 3D visual fidelity. The local
+  Playwright screenshots show the rendered islands, and hosted DOM/game state
+  checks passed. Hosted visual fidelity remains a manual review item.
+- Hosted API initially returned `Preview unavailable`. Supabase management
+  reported project `headstrong-dev` INACTIVE; recent logs were empty, and no
+  database health conclusion can be drawn from empty advisor results while
+  inactive. User explicitly approved resuming the existing project, with no
+  upgrade or credential rotation. Restore was accepted; hosted saved-workspace
+  acceptance remains pending database availability and retest.
 
 Platform crash recovery, transactional finalization/allocations, token-aware
 operator interfaces, complete verified OAuth/LTI flows and real-child safeguards
