@@ -1,7 +1,7 @@
 # Approved discovery connection
 
-Status: local release verification passed; not deployed. Migration 0016 has not
-been applied to the hosted synthetic preview.
+Status: pushed and deployed to the existing owner-only synthetic preview.
+Migration 0016 is applied. This is not participant-test or production approval.
 
 ## Experience boundary
 
@@ -44,7 +44,7 @@ does not grant browser access or change the existing runtime role. Verify the
 new insert and catalog queries using the constrained preview runtime role before
 release, not just a local database owner.
 
-Hosted migration/deployment and hosted acceptance are pending. Enrollment,
+Full hosted-browser save/reply acceptance is pending. Enrollment,
 hosted 3D visual confirmation and deferred credential
 rotation remain separate unfinished work. This increment does not establish
 real-child readiness or completion of the adventure-world objective.
@@ -78,3 +78,50 @@ The expanded mobile test exposed long-select intrinsic sizing that widened the
 grid. A bounded grid track and picker width fix the cause without hiding overflow.
 The final 390px screenshot and overflow assertion pass. Earlier failed logs are
 retained; neither the privacy nor mobile assertions were removed to get green.
+
+## Hosted rollout receipt
+
+- Verified source `efca09d` pushed on `feat/curiosityverse-local-integration`;
+  no default-branch merge. Code was not changed after the final release run.
+- Applied `headstrong_discovery_submissions` only to `headstrong-dev`. In one
+  transaction, took the repository migration advisory lock, required the
+  synthetic-only configuration, verified all 15 prior names/checksums, added the
+  flag/index, and registered `0016_discovery_submissions.sql` in
+  `headstrong_migrations` with checksum
+  `55a673285aca1e2e1d989f9410b7309db34becfbdde0f0a361f16971ab8c2ef3`.
+  All prior migrations/checksums are unchanged. No broad bootstrap was rerun.
+- Post-apply metadata confirms the flag defaults false, the index exists,
+  learning-goal RLS remains enabled, browser-role SELECT remains false, runtime
+  INSERT on the flag is allowed and runtime UPDATE on the flag is forbidden.
+  Existing column-scoped quest selection permissions are unchanged.
+- API deployed first: `2c0049fe-8af1-439a-8de8-a560967487ca`.
+  Web deployed from verified generated output:
+  `afd93c61-0359-4f4e-b591-1de762ad6915`.
+- Actual private API/Hyperdrive passed 25 checks: authorized adventure discovery,
+  missing-session/adult-role denial, forged-field rejection, invalid observation
+  and stale scene rollback, concurrent identical submissions (201/200), normalized
+  UUID retry, conflicting retry/legacy collision denial, all three authorized
+  record catalogs, guardian encouragement, and logout/immediate catalog denial
+  for all three temporary test sessions.
+- Synthetic record `903fd9d3-4060-41ad-8e7e-97b65799efc8` has exactly one
+  submission, one evidence row and one guardian reply. The rejected submission
+  left no goal. Mastery stayed zero before/after. All three probe sessions are
+  revoked. Existing operator/demo sessions and protected files were untouched;
+  no token or signing secret was printed. Sanitized scripts/reports remain in
+  ignored `artifacts/local-verification/hosted-discovery-smoke*`.
+- Signed-out HTML, the actual new adventure JS bundle and all three catalog/share
+  paths still redirect to Access. Direct API workers.dev returns 404. Neither
+  Access admission nor browsing the panel grants a learner/adult role.
+- The refreshed authenticated hosted browser entered the island and opened the
+  new optional picker panel with nothing selected and Share disabled. This is
+  UI deployment evidence, not full hosted-browser token/save/reply acceptance or
+  proof of hosted WebGL visual fidelity. Returned it to the paused island.
+- Fresh advisors have no WARN/ERROR items. INFO remains:
+  [18 deny-by-default RLS tables](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy),
+  [22 existing unindexed foreign keys](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys),
+  [19 unused indexes](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index).
+
+The additive schema remains compatible with old code. A code rollback must
+retain records and the migration; do not drop evidence or rewrite migration
+history to roll back the interface. Full enrollment, a polished adult inbox,
+adventure duration and real-child safeguarding remain outside this receipt.

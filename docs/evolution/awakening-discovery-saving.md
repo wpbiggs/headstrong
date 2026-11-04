@@ -1,5 +1,10 @@
 # Optional Awakening discovery saving
 
+**Current follow-up:** [approved discovery connection](approved-discovery-connection.md)
+adds authorized adventure/record pickers and atomic sharing without a pre-created
+record ID. Token provisioning remains separate. The manual-record setup below
+describes the original bridge and remains a fallback, not the normal new-save path.
+
 Status: pushed and deployed to the existing owner-only synthetic preview.
 Not participant-ready or complete account onboarding.
 

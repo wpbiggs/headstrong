@@ -54,6 +54,15 @@ API `07270e37-94cf-4a46-9ed3-fa4a81960487` and web
 `e7dcbc95-b438-4c5b-953e-670bd365a865` are the current deployment; see
 [guardian receipt](guardian-feedback.md) for local/hosted tests, scope and limits.
 
+**Discovery connection follow-up:** source `efca09d` removes pre-created record-ID
+setup from optional saving via authorized adventure/record pickers and atomic,
+retry-safe sharing. Migration 0016 was applied after checking all 15 prior
+checksums. Current API: `2c0049fe-8af1-439a-8de8-a560967487ca`; current web:
+`afd93c61-0359-4f4e-b591-1de762ad6915`. All 17 local gates, 22 local browser runs
+and 25 hosted API checks passed. Access remains private and synthetic-only. See
+[connection receipt](approved-discovery-connection.md); token provisioning,
+full hosted-browser acceptance and hosted 3D visual fidelity remain unfinished.
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).

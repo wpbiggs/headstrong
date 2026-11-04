@@ -250,6 +250,12 @@ uploads notes, infers mastery or grants account/content authorization.
 
 ## Follow-up: trusted guardian encouragement
 
+**Later connection follow-up:** [approved discovery connection](approved-discovery-connection.md)
+adds authorized adventure/record pickers and atomic retry-safe sharing without
+pre-created goals. It remains behind optional saving and does not change default
+play or establish mastery. Token provisioning and full hosted-browser acceptance
+are still unfinished.
+
 [Guardian encouragement](guardian-feedback.md) adds a separate supportive reply,
 not another assessment or a new game requirement. Its receipt governs current
 verification/rollout state. Default adventure entry, world changes and optional
