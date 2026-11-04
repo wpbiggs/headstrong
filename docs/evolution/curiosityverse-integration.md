@@ -240,6 +240,14 @@ use**. No remote credential changes were made.
   No schema, policy or index changes were made as part of resume/verification.
   Local sanitized probe script/report: `artifacts/local-verification/hosted-smoke*`.
 
+## Follow-up: optional discovery saving
+
+The earlier session-only limitation now has a separate explicit opt-in bridge;
+see [Awakening discovery saving](awakening-discovery-saving.md) for current
+implementation, exact tests, synthetic provisioning and deployment evidence.
+Default play and the legacy saved workspace remain independent. No game action
+uploads notes, infers mastery or grants account/content authorization.
+
 Platform crash recovery, transactional finalization/allocations, token-aware
 operator interfaces, complete verified OAuth/LTI flows and real-child safeguards
 remain outside this bounded milestone. Keep their documented release blockers;

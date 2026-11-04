@@ -93,6 +93,7 @@ export async function seedLearningFixture(client: DatabaseClient) {
     tokens,
     questId: created.quest.id,
     task: created.tasks[0],
+    composition,
   };
 }
 

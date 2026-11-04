@@ -8,11 +8,13 @@ import {
   awakeningExperience as spec,
 } from "../lib/awakening";
 import { mountAwakening } from "../lib/playcanvas-awakening";
+import { DiscoverySavePanel } from "./discovery-save-panel";
 import { LearningJourneyPanel } from "./learning-journey-panel";
 
 export function AwakeningAdventure() {
   const [island, dispatch] = useReducer(islandReducer, undefined, newIsland);
   const [connected, setConnected] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [note, setNote] = useState("");
   const [reflection, setReflection] = useState(false);
   const [ready, setReady] = useState(false);
@@ -21,7 +23,7 @@ export function AwakeningAdventure() {
   const current = useRef(island);
   current.current = island;
   const f = island.flight;
-  const playing = !island.paused && !connected;
+  const playing = !island.paused && !connected && !saving;
   useEffect(() => setReady(true), []);
 
   useEffect(() => {
@@ -70,7 +72,7 @@ export function AwakeningAdventure() {
     setReflection(false);
   }
   useEffect(() => {
-    if (connected) return;
+    if (connected || saving) return;
     function key(event: KeyboardEvent) {
       if (
         (event.target as HTMLElement).matches("input, textarea, select") ||
@@ -94,7 +96,16 @@ export function AwakeningAdventure() {
     }
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [connected]);
+  }, [connected, saving]);
+
+  if (saving)
+    return (
+      <DiscoverySavePanel
+        attempts={island.attempts}
+        note={note}
+        onBack={() => setSaving(false)}
+      />
+    );
 
   if (connected)
     return (
@@ -360,7 +371,8 @@ export function AwakeningAdventure() {
           </button>
           {reflection && (
             <label className="island-note">
-              What surprised you? (optional, not saved or sent)
+              What surprised you? (optional; kept in this tab unless you choose
+              to share)
               <textarea
                 maxLength={500}
                 value={note}
@@ -372,8 +384,9 @@ export function AwakeningAdventure() {
       </div>
       <footer className="island-footer">
         <p>
-          Synthetic, session-only play. Reset or reload clears all flights and
-          notes. No account, personal records, rewards or automatic mastery.
+          Synthetic, session-only play. Reset or reload clears this tab’s
+          flights and notes, not discoveries you chose to save. No score or
+          automatic mastery. No account is needed to play.
         </p>
         <div>
           <button
@@ -385,6 +398,16 @@ export function AwakeningAdventure() {
             }}
           >
             Connect saved workspace
+          </button>
+          <button
+            type="button"
+            disabled={!ready}
+            onClick={() => {
+              dispatch({ type: "pause" });
+              setSaving(true);
+            }}
+          >
+            Save an island discovery (optional)
           </button>
         </div>
       </footer>

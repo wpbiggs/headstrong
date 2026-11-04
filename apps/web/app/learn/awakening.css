@@ -346,6 +346,21 @@
     scroll-behavior: auto !important;
   }
 }
+.discovery-save label {
+  display: block;
+  margin: 16px 0;
+}
+.discovery-save input:not([type="checkbox"]) {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+.discovery-preview {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 16px;
+  background: #183843;
+}
 @media (min-width: 1000px) {
   .awakening:not(.connected-record) {
     display: grid;

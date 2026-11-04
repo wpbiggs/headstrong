@@ -2,12 +2,92 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { experienceSpecSchema } from "@headstrong/core";
 import {
+  learningEvidenceInputSchema,
+  learningJourneyDetailSchema,
+} from "@headstrong/core";
+import {
   type Island,
   awakeningExperience,
   islandReducer,
   newIsland,
 } from "./awakening";
+import { discoverySummary, isAwakeningRecord } from "./awakening-discovery";
 import { sampleExperience } from "./sample-experience";
+
+test("discovery selection is explicit, bounded and not an assessment", () => {
+  const attempts = finish(newIsland()).attempts;
+  assert.equal(
+    discoverySummary(attempts, "private unsent note", false, false),
+    "",
+  );
+  const flights = discoverySummary(
+    attempts,
+    "private unsent note",
+    true,
+    false,
+  );
+  assert.match(flights, /70 m/);
+  assert.match(flights, /not proof of mastery/);
+  assert.doesNotMatch(flights, /private unsent note/);
+  const note = discoverySummary(attempts, "I noticed the wind.", false, true);
+  assert.doesNotMatch(note, /Selected flights/);
+  assert.match(note, /I noticed the wind/);
+  assert.equal(discoverySummary([], "   ", true, true), "");
+  const maximal = discoverySummary(
+    Array(6).fill(attempts[0]),
+    "x".repeat(500),
+    true,
+    true,
+  );
+  assert.ok(
+    learningEvidenceInputSchema.safeParse({
+      reflection: maximal,
+      observedEntityIds: ["workshop"],
+    }).success,
+  );
+});
+
+test("discovery bridge requires the exact current curated scene and quest binding", () => {
+  const detail = learningJourneyDetailSchema.parse({
+    journey: {
+      id: awakeningExperience.taskId,
+      learnerId: awakeningExperience.questId,
+      objective: awakeningExperience.objective,
+      questId: awakeningExperience.questId,
+      createdAt: "2026-11-04T00:00:00Z",
+      evidence: null,
+      feedback: null,
+      satisfaction: null,
+    },
+    experience: awakeningExperience,
+  });
+  assert.equal(isAwakeningRecord(detail), true);
+  assert.equal(isAwakeningRecord({ ...detail, experience: null }), false);
+  assert.equal(
+    isAwakeningRecord({ ...detail, experience: sampleExperience }),
+    false,
+  );
+  assert.equal(
+    isAwakeningRecord({
+      ...detail,
+      experience: {
+        ...awakeningExperience,
+        scene: {
+          ...awakeningExperience.scene,
+          summary: "Changed content needs review",
+        },
+      },
+    }),
+    false,
+  );
+  assert.equal(
+    isAwakeningRecord({
+      ...detail,
+      journey: { ...detail.journey, questId: null },
+    }),
+    false,
+  );
+});
 
 function finish(state: Island) {
   let next = islandReducer(state, { type: "launch" });

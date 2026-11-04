@@ -1,5 +1,211 @@
 import { expect, test } from "@playwright/test";
 
+test("closing or changing the discovery session discards late responses and never uploads notes", async ({
+  page,
+  request,
+}) => {
+  const fixture = await (
+    await request.get("http://127.0.0.1:4000/__fixture")
+  ).json();
+  const response = await request.get(
+    `http://127.0.0.1:4000/learning/goals/${fixture.adventureGoalId}`,
+    { headers: { Authorization: `Bearer ${fixture.tokens.learner}` } },
+  );
+  const detail = await response.json();
+  const writes: string[] = [];
+  page.on("request", (r) => {
+    if (r.method() === "POST") writes.push(r.url());
+  });
+  await page.goto("/learn");
+  await page.getByRole("button", { name: /Optional: leave/ }).click();
+  await page
+    .getByRole("textbox", { name: /What surprised/ })
+    .fill("This note stays private unless I choose to share it.");
+  await page
+    .getByRole("button", { name: "Save an island discovery (optional)" })
+    .click();
+  await page.getByLabel("Share my optional island note").check();
+  await page.getByLabel("Discovery learner token").fill(fixture.tokens.learner);
+  await page.getByLabel("Awakening record ID").fill(fixture.adventureGoalId);
+  let release = () => {};
+  const delayed = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/learning/goals/*", async (route) => {
+    await delayed;
+    try {
+      await route.fulfill({ json: detail });
+    } catch {
+      /* Aborted after session change. */
+    }
+  });
+  await page
+    .getByRole("button", { name: "Check record / refresh human feedback" })
+    .click();
+  await expect(page.getByRole("status")).toContainText("Checking");
+  await page
+    .getByLabel("Discovery learner token")
+    .fill(fixture.tokens.stranger);
+  release();
+  await expect(
+    page.getByRole("button", {
+      name: "Share this discovery with my trusted adults",
+    }),
+  ).toBeDisabled();
+  await expect(page.getByText(/Record: [a-f0-9]/)).toHaveCount(0);
+  await page.getByRole("button", { name: /Back to paused island/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "A good place to rest." }),
+  ).toBeVisible();
+  expect(writes).toEqual([]);
+});
+
+test("explicit adventure save previews only selected flights, rejects unrelated quests and receives human feedback", async ({
+  page,
+  request,
+}) => {
+  const fixture = await (
+    await request.get("http://127.0.0.1:4000/__fixture")
+  ).json();
+  const headers = { Authorization: `Bearer ${fixture.tokens.learner}` };
+  const unrelated = await (
+    await request.post("http://127.0.0.1:4000/learning/goals", {
+      headers,
+      data: { objective: "Understand equal fraction pieces" },
+    })
+  ).json();
+  await request.post(
+    `http://127.0.0.1:4000/learning/goals/${unrelated.id}/quest`,
+    { headers, data: { questId: fixture.questId } },
+  );
+  const writes: string[] = [];
+  page.on("request", (r) => {
+    if (r.method() === "POST") writes.push(r.url());
+  });
+  await page.goto("/learn");
+  await page.getByRole("button", { name: "Launch glider" }).click();
+  await expect(
+    page.getByRole("heading", { name: "You carried the spark." }),
+  ).toBeVisible({ timeout: 15000 });
+  await page.getByRole("button", { name: /Optional: leave/ }).click();
+  await page
+    .getByRole("textbox", { name: /What surprised/ })
+    .fill("PRIVATE unsent note about my experiment.");
+  await page
+    .getByRole("button", { name: "Save an island discovery (optional)" })
+    .click();
+  await expect(page.locator("canvas")).toHaveCount(0);
+  await expect(
+    page.getByText("Nothing selected.", { exact: false }),
+  ).toBeVisible();
+  expect(writes).toEqual([]);
+  await expect(
+    page.getByLabel("Share my optional island note"),
+  ).not.toBeChecked();
+  await page.getByLabel(/Share completed flights/).check();
+  await expect(page.locator(".discovery-preview")).toContainText("70 m");
+  await expect(page.locator(".discovery-preview")).not.toContainText("PRIVATE");
+  await page.getByLabel("Discovery learner token").fill(fixture.tokens.learner);
+  await page.getByLabel("Awakening record ID").fill(unrelated.id);
+  await page
+    .getByRole("button", { name: "Check record / refresh human feedback" })
+    .click();
+  await expect(
+    page.locator(".discovery-save").getByRole("alert"),
+  ).toContainText("not a currently approved Awakening record");
+  expect(writes).toEqual([]);
+  await page.getByLabel("Awakening record ID").fill(fixture.adventureGoalId);
+  await page
+    .getByRole("button", { name: "Check record / refresh human feedback" })
+    .click();
+  const share = page.getByRole("button", {
+    name: "Share this discovery with my trusted adults",
+  });
+  await expect(share).toBeEnabled();
+  expect(writes).toEqual([]);
+  await share.click();
+  await expect(page.getByRole("status")).toContainText(
+    "Your discovery was saved",
+  );
+  await expect(share).toBeDisabled();
+  expect(writes).toEqual([
+    `http://127.0.0.1:4000/learning/goals/${fixture.adventureGoalId}/evidence`,
+  ]);
+  const saved = await (
+    await request.get(
+      `http://127.0.0.1:4000/learning/goals/${fixture.adventureGoalId}`,
+      { headers: { Authorization: `Bearer ${fixture.tokens.parent}` } },
+    )
+  ).json();
+  expect(saved.journey.evidence.reflection).toContain("70 m");
+  expect(saved.journey.evidence.reflection).not.toContain("PRIVATE");
+  const feedback = await request.post(
+    `http://127.0.0.1:4000/learning/goals/${fixture.adventureGoalId}/feedback`,
+    {
+      headers: { Authorization: `Bearer ${fixture.tokens.educator}` },
+      data: {
+        assessment: "needs_practice",
+        comment:
+          "I noticed your experiment. Try changing only the wing next time.",
+      },
+    },
+  );
+  expect(feedback.status()).toBe(201);
+  await page
+    .getByRole("button", { name: "Check record / refresh human feedback" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Human educator feedback" }),
+  ).toBeVisible();
+  await expect(page.getByText(/I noticed your experiment/)).toBeVisible();
+  await page.screenshot({
+    path: "test-results/awakening-discovery-desktop.png",
+    fullPage: true,
+    mask: [page.getByLabel("Discovery learner token")],
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await page.screenshot({
+    path: "test-results/awakening-discovery-mobile.png",
+    fullPage: false,
+    mask: [page.getByLabel("Discovery learner token")],
+  });
+  await page
+    .getByRole("heading", { name: "Human educator feedback" })
+    .scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: "test-results/awakening-discovery-mobile-feedback.png",
+    fullPage: false,
+    mask: [page.getByLabel("Discovery learner token")],
+  });
+  await page.getByRole("button", { name: /Back to paused island/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "A good place to rest." }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Resume adventure", exact: true })
+    .first()
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "You carried the spark." }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Save an island discovery (optional)" })
+    .click();
+  await expect(page.getByLabel("Discovery learner token")).toHaveValue("");
+  await expect(page.getByLabel(/Share completed flights/)).not.toBeChecked();
+  expect(
+    await page.evaluate(() => [
+      Object.keys(localStorage),
+      Object.keys(sessionStorage),
+    ]),
+  ).toEqual([[], []]);
+});
+
 test("game-first entry, contrasting experiments, keyboard steering, consequence, rest/reset and privacy", async ({
   page,
 }) => {
