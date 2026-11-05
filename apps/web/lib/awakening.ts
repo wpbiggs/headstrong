@@ -5,6 +5,12 @@ import {
   newSeedGarden,
   seedGardenReducer,
 } from "./seedwind";
+import {
+  type WaterAction,
+  type Waterworks,
+  newWaterworks,
+  waterworksReducer,
+} from "./waterworks";
 
 // Curated synthetic content, not a quest authorization or persisted learner record.
 // v1 supplies the portable scene/content envelope. Flight rules stay local to this
@@ -113,6 +119,7 @@ export type Attempt = Pick<Flight, "wing" | "distance" | "reached"> & {
   route: string;
 };
 export type Island = {
+  waterworks: Waterworks;
   location: IslandLocation;
   sky: Observatory;
   garden: SeedGarden;
@@ -125,6 +132,7 @@ export type Island = {
 };
 export type IslandAction =
   | SeedAction
+  | WaterAction
   | { type: "visit"; location: IslandLocation }
   | { type: "constellation"; constellation: Observatory["constellation"] }
   | { type: "lens"; lens: Observatory["lens"] }
@@ -152,6 +160,7 @@ const readyFlight = (wing: Wing = "wide", lane: Lane = -1): Flight => ({
   reached: false,
 });
 export const newIsland = (): Island => ({
+  waterworks: newWaterworks(),
   location: "workshop",
   sky: { constellation: "moth", lens: "wide" },
   garden: newSeedGarden(),
@@ -171,6 +180,10 @@ export function islandReducer(state: Island, action: IslandAction): Island {
   if (action.type === "resume") return { ...state, paused: false };
   if (state.paused) return state;
   if (action.type === "visit") return { ...state, location: action.location };
+  if (action.type === "water-gate" || action.type === "pour-water")
+    return state.location === "garden"
+      ? { ...state, waterworks: waterworksReducer(state.waterworks, action) }
+      : state;
   if (action.type === "constellation")
     return state.location === "observatory"
       ? { ...state, sky: { ...state.sky, constellation: action.constellation } }

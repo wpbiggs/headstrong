@@ -452,6 +452,7 @@ export function AwakeningAdventure() {
       {island.location === "garden" && (
         <SeedwindGarden
           garden={island.garden}
+          waterworks={island.waterworks}
           disabled={!ready || !playing}
           dispatch={dispatch}
         />

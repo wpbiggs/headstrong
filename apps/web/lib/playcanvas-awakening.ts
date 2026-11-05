@@ -52,6 +52,7 @@ export async function mountAwakening(
     const sail = material(1, 0.8, 0.46);
     const spark = material(0.59, 0.96, 0.8, true);
     const sleeping = material(0.24, 0.39, 0.46);
+    const water = material(0.18, 0.73, 0.86, true);
     function shape(
       name: string,
       type: "box" | "cylinder" | "sphere" | "cone",
@@ -179,6 +180,23 @@ export async function mountAwakening(
           [2.5, 0.15, 2.2],
           bark,
         );
+        const pool = shape(
+          `${bed} water ripples`,
+          "cylinder",
+          [x, -0.14, z],
+          [2, 0.03, 1.8],
+          water,
+        );
+        const dx = x + 7;
+        const dz = z + 6.5;
+        const channel = shape(
+          `${bed} water channel`,
+          "box",
+          [(x - 7) / 2, -0.12, (z - 6.5) / 2],
+          [0.15, 0.07, Math.hypot(dx, dz)],
+          water,
+        );
+        channel.setEulerAngles(0, (Math.atan2(dx, dz) * 180) / Math.PI, 0);
         const clumps = Array.from({ length: 3 }, (_, i) => {
           const plant = new pc.Entity(`${bed} seed clump ${i + 1}`);
           plant.setLocalPosition(
@@ -195,7 +213,7 @@ export async function mountAwakening(
             leaf,
             plant,
           );
-          shape(
+          const leaves = shape(
             "Seedling leaves",
             "cone",
             [0, 0.45, 0],
@@ -203,7 +221,7 @@ export async function mountAwakening(
             leaf,
             plant,
           );
-          shape(
+          const blossom = shape(
             "Seedling blossom",
             "sphere",
             [0, 0.8, 0],
@@ -212,11 +230,19 @@ export async function mountAwakening(
             plant,
           );
           plant.enabled = false;
-          return plant;
+          return { plant, leaves, blossom };
         });
-        return { bed, clumps };
+        return { bed, clumps, pool, channel };
       },
     );
+    shape(
+      "Garden hand pump",
+      "cylinder",
+      [-7, 0.25, -6.5],
+      [0.5, 1, 0.5],
+      brass,
+    );
+    shape("Pump handle", "box", [-7, 0.85, -6.5], [1.2, 0.12, 0.18], bark);
     const creature = shape(
       "Lumiling",
       "sphere",
@@ -287,9 +313,31 @@ export async function mountAwakening(
         star.enabled = s.location === "observatory";
         star.setPosition(projection[i][0], 5 + projection[i][1], beaconZ);
       });
-      for (const { bed, clumps } of seedBeds)
-        for (let i = 0; i < clumps.length; i++)
-          clumps[i].enabled = i < s.garden.beds[bed];
+      for (const { bed, clumps, pool, channel } of seedBeds) {
+        const drops = s.waterworks.flow[bed];
+        pool.enabled = channel.enabled = drops > 0;
+        pool.setLocalScale(
+          drops === 3 ? 2.3 : 1.6,
+          0.03,
+          drops === 3 ? 2 : 1.3,
+        );
+        channel.setLocalScale(
+          drops === 3 ? 0.3 : 0.12,
+          0.07,
+          channel.getLocalScale().z,
+        );
+        for (let i = 0; i < clumps.length; i++) {
+          const { plant, leaves, blossom } = clumps[i];
+          plant.enabled = i < s.garden.beds[bed];
+          plant.setLocalScale(1, drops === 3 ? 1.6 : 1, 1);
+          leaves.setLocalScale(
+            drops === 1 ? 1 : 0.55,
+            drops === 1 ? 0.25 : 0.55,
+            0.5,
+          );
+          blossom.enabled = drops === 3;
+        }
+      }
       const x = f.lane * 2.4;
       glider.setPosition(
         x,

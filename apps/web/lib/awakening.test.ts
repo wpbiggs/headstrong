@@ -15,6 +15,73 @@ import {
 import { discoverySummary, isAwakeningRecord } from "./awakening-discovery";
 import { sampleExperience } from "./sample-experience";
 import { newSeedGarden, seedGardenReducer, seedTrial } from "./seedwind";
+import { bedResponse, routeWater } from "./waterworks";
+
+test("water routing conserves one cup, interacts with seeds and never becomes a care timer", () => {
+  for (const gate of ["cove", "slope", "terrace", "split"] as const) {
+    const flow = routeWater(gate);
+    assert.equal(
+      Object.values(flow).reduce((a, b) => a + b, 0),
+      3,
+    );
+    assert.deepEqual(
+      flow,
+      gate === "split"
+        ? { cove: 1, slope: 1, terrace: 1 }
+        : {
+            cove: gate === "cove" ? 3 : 0,
+            slope: gate === "slope" ? 3 : 0,
+            terrace: gate === "terrace" ? 3 : 0,
+          },
+    );
+  }
+  let state = newIsland();
+  assert.equal(islandReducer(state, { type: "pour-water" }), state);
+  state = islandReducer(state, { type: "visit", location: "garden" });
+  const original = state;
+  state = islandReducer(state, { type: "pour-water" });
+  assert.deepEqual(state.waterworks.flow, { cove: 3, slope: 0, terrace: 0 });
+  assert.deepEqual(state.garden, original.garden);
+  assert.match(bedResponse(0, 3), /Ripples/);
+  state = islandReducer(state, { type: "sow-seed" });
+  assert.match(
+    bedResponse(state.garden.beds.cove, state.waterworks.flow.cove),
+    /tall golden/,
+  );
+  state = islandReducer(state, { type: "water-gate", gate: "split" });
+  assert.deepEqual(
+    state.waterworks.flow,
+    { cove: 3, slope: 0, terrace: 0 },
+    "gate is only a preview",
+  );
+  state = islandReducer(state, { type: "pour-water" });
+  assert.deepEqual(state.waterworks.flow, { cove: 1, slope: 1, terrace: 1 });
+  assert.match(bedResponse(1, 1), /low, wide/);
+  assert.match(bedResponse(1, 0), /safe, not failing/);
+  for (let i = 0; i < 30; i++)
+    state = islandReducer(state, { type: "pour-water" });
+  assert.equal(state.waterworks.pours.length, 4);
+  assert.deepEqual(
+    state.waterworks.flow,
+    { cove: 1, slope: 1, terrace: 1 },
+    "no accumulation",
+  );
+  const paused = islandReducer(state, { type: "pause" });
+  assert.equal(islandReducer(paused, { type: "pour-water" }), paused);
+  assert.equal(
+    islandReducer(paused, { type: "water-gate", gate: "cove" }),
+    paused,
+  );
+  const workshop = islandReducer(state, {
+    type: "visit",
+    location: "workshop",
+  });
+  assert.deepEqual(
+    islandReducer(finish(workshop), { type: "retry" }).waterworks,
+    state.waterworks,
+  );
+  assert.deepEqual(islandReducer(state, { type: "reset" }), newIsland());
+});
 
 test("trail preserves unfinished flights, scopes experiments and never gates the observatory", () => {
   let state = islandReducer(newIsland(), { type: "launch" });

@@ -1,5 +1,122 @@
 import { expect, test } from "@playwright/test";
 
+test("waterworks changes seeded beds without WebGL, conserves a cup and never runs a care clock or upload", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<typeof original>
+    ) {
+      if (String(args[0]).includes("webgl")) return null;
+      return original.apply(this, args);
+    } as typeof original;
+  });
+  const calls: string[] = [];
+  page.on("request", (r) => {
+    if (r.url().includes("/learning/")) calls.push(r.url());
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/learn");
+  await expect(page.getByText(/3D unavailable/)).toBeVisible();
+  await page.getByRole("button", { name: "Seed garden", exact: true }).click();
+  const water = page.getByRole("region", { name: "Garden waterworks" });
+  await page
+    .getByRole("button", { name: "Water channels", exact: true })
+    .click();
+  await water.getByRole("button", { name: "Pour one cup" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".seedwind-bed").nth(0)).toContainText(
+    "Ripples cross the empty soil",
+  );
+  await expect(water.getByRole("img")).toHaveAccessibleName(
+    "Last poured water: cove 3, slope 0, terrace 0 drops",
+  );
+  await page.getByRole("button", { name: "Seed breeze", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Release a seed on the wind" })
+    .click();
+  await page
+    .getByRole("button", { name: "Water channels", exact: true })
+    .click();
+  await expect(page.locator(".seedwind-bed").nth(0)).toContainText(
+    "tall golden blossoms",
+  );
+  await water.getByRole("button", { name: "Split three ways" }).click();
+  await expect(water.locator(".water-preview")).toContainText(
+    "cove 1, slope 1, terrace 1",
+  );
+  await expect(water.getByRole("img")).toHaveAccessibleName(
+    "Last poured water: cove 3, slope 0, terrace 0 drops",
+  );
+  await water.getByRole("button", { name: "Pour one cup" }).click();
+  await expect(page.locator(".seedwind-bed").nth(0)).toContainText(
+    "low, wide leaves",
+  );
+  await expect(water.getByRole("img")).toHaveAccessibleName(
+    "Last poured water: cove 1, slope 1, terrace 1 drops",
+  );
+  await page.getByRole("button", { name: "Observatory", exact: true }).click();
+  await page.getByRole("button", { name: "Seed garden", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Water channels", exact: true })
+    .click();
+  await expect(page.locator(".seedwind-bed.watered")).toHaveCount(3);
+  await page.getByRole("button", { name: "Stop & rest", exact: true }).click();
+  await expect(
+    water.getByRole("button", { name: "Pour one cup" }),
+  ).toBeDisabled();
+  await expect(
+    water.getByRole("button", { name: "Cove channel" }),
+  ).toBeDisabled();
+  await page
+    .getByRole("button", { name: "Resume adventure", exact: true })
+    .first()
+    .click();
+  await water.getByRole("button", { name: "Terrace channel" }).click();
+  for (let i = 0; i < 4; i++)
+    await water.getByRole("button", { name: "Pour one cup" }).click();
+  await expect(
+    water.getByRole("list", { name: "Your last water routes" }).locator("li"),
+  ).toHaveCount(4);
+  await expect(page.locator(".seedwind-bed").nth(0)).toContainText(
+    "safe, not failing",
+  );
+  await expect(page.locator(".seedwind-bed.watered")).toHaveCount(1);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await water.screenshot({ path: "test-results/waterworks-mobile.png" });
+  await page
+    .getByRole("button", { name: "Save an island discovery (optional)" })
+    .click();
+  await expect(page.getByLabel("Share seed experiments (1)")).not.toBeChecked();
+  await page.getByLabel("Share seed experiments (1)").check();
+  await expect(page.locator(".discovery-preview")).toContainText(
+    "Selected seed releases",
+  );
+  await expect(page.locator(".discovery-preview")).not.toContainText(
+    /water|drops|channel/i,
+  );
+  expect(calls).toEqual([]);
+  await page.getByRole("button", { name: /Back to paused island/ }).click();
+  await page.getByRole("button", { name: "Reset island", exact: true }).click();
+  await page.getByRole("button", { name: "Seed garden", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Water channels", exact: true })
+    .click();
+  await expect(water.locator(".water-result")).toContainText(
+    "The pump is waiting",
+  );
+  await expect(page.locator(".seedwind-bed.watered")).toHaveCount(0);
+  await expect(
+    water.getByRole("list", { name: "Your last water routes" }),
+  ).toHaveCount(0);
+});
+
 test("seed choices grow contrasting patches without WebGL, accounts, flights or mandatory reflection; sharing is explicit", async ({
   page,
   request,
@@ -30,7 +147,7 @@ test("seed choices grow contrasting patches without WebGL, accounts, flights or 
     .getByRole("button", { name: "Release a seed on the wind" })
     .focus();
   await page.keyboard.press("Enter");
-  await expect(garden.locator("output")).toContainText("2 m");
+  await expect(garden.locator(".seedwind-result")).toContainText("2 m");
   await expect(garden.locator(".seedwind-bed").nth(0)).toContainText(
     "1 growing clump",
   );
@@ -38,7 +155,7 @@ test("seed choices grow contrasting patches without WebGL, accounts, flights or 
   await garden
     .getByRole("button", { name: "Release a seed on the wind" })
     .click();
-  await expect(garden.locator("output")).toContainText("6 m");
+  await expect(garden.locator(".seedwind-result")).toContainText("6 m");
   await expect(garden.locator(".seedwind-bed").nth(1)).toContainText(
     "1 growing clump",
   );
@@ -46,7 +163,7 @@ test("seed choices grow contrasting patches without WebGL, accounts, flights or 
   await garden
     .getByRole("button", { name: "Release a seed on the wind" })
     .click();
-  await expect(garden.locator("output")).toContainText("14 m");
+  await expect(garden.locator(".seedwind-result")).toContainText("14 m");
   await expect(garden.locator(".seedwind-bed").nth(2)).toContainText(
     "1 growing clump",
   );
@@ -112,7 +229,9 @@ test("seed choices grow contrasting patches without WebGL, accounts, flights or 
   await page.getByRole("button", { name: "Reset island", exact: true }).click();
   await page.getByRole("button", { name: "Seed garden", exact: true }).click();
   await expect(page.locator(".seedwind-bed.growing")).toHaveCount(0);
-  await expect(garden.locator("output")).toContainText("The soil is waiting");
+  await expect(garden.locator(".seedwind-result")).toContainText(
+    "The soil is waiting",
+  );
 });
 
 test("3D garden renders and survives renderer disposal without extra plant growth", async ({
@@ -132,6 +251,11 @@ test("3D garden renders and survives renderer disposal without extra plant growt
   await garden
     .getByRole("button", { name: "Release a seed on the wind" })
     .click();
+  await page
+    .getByRole("button", { name: "Water channels", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Terrace channel" }).click();
+  await page.getByRole("button", { name: "Pour one cup" }).click();
   await page.locator("canvas").scrollIntoViewIfNeeded();
   await page
     .locator("canvas")
@@ -150,6 +274,13 @@ test("3D garden renders and survives renderer disposal without extra plant growt
     ).toBeVisible();
   }
   await expect(garden.locator(".seedwind-bed.growing")).toHaveCount(2);
+  await expect(garden.locator(".seedwind-bed").nth(2)).toContainText(
+    "tall golden blossoms",
+  );
+  await expect(
+    page.getByRole("list", { name: "Your last water routes" }).locator("li"),
+  ).toHaveCount(1);
+  await page.getByRole("button", { name: "Seed breeze", exact: true }).click();
   await expect(
     page
       .getByRole("list", { name: "Your last seed experiments" })

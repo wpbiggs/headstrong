@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import type { Island, IslandAction } from "../lib/awakening";
 import type { GardenBed } from "../lib/seedwind";
+import { bedResponse } from "../lib/waterworks";
+import { GardenWaterworks } from "./garden-waterworks";
 
 const beds: { id: GardenBed; label: string; mark: string }[] = [
   { id: "cove", label: "Cove bed", mark: "≈" },
@@ -11,14 +14,17 @@ const beds: { id: GardenBed; label: string; mark: string }[] = [
 
 export function SeedwindGarden({
   garden,
+  waterworks,
   disabled,
   dispatch,
 }: {
   garden: Island["garden"];
+  waterworks: Island["waterworks"];
   disabled: boolean;
   dispatch: (action: IslandAction) => void;
 }) {
   const last = garden.trials.at(-1);
+  const [tool, setTool] = useState<"seeds" | "water">("seeds");
   return (
     <section className="seedwind-garden" aria-label="Seedwind garden">
       <p className="island-eyebrow">ANOTHER PATH / THE SEEDWIND GARDEN</p>
@@ -28,61 +34,90 @@ export function SeedwindGarden({
         breeze. Every landing grows something; the high terrace is not a better
         score.
       </p>
-      <fieldset disabled={disabled}>
-        <legend>Choose a seed shape</legend>
-        <div className="choice-row">
-          <button
-            type="button"
-            aria-pressed={garden.shape === "round"}
-            onClick={() => dispatch({ type: "seed-shape", shape: "round" })}
-          >
-            Round · rolls close
-          </button>
-          <button
-            type="button"
-            aria-pressed={garden.shape === "feathered"}
-            onClick={() => dispatch({ type: "seed-shape", shape: "feathered" })}
-          >
-            Feathered · catches air
-          </button>
-        </div>
+      <fieldset className="choice-row" aria-label="Garden tools">
+        <button
+          type="button"
+          aria-pressed={tool === "seeds"}
+          onClick={() => setTool("seeds")}
+        >
+          Seed breeze
+        </button>
+        <button
+          type="button"
+          aria-pressed={tool === "water"}
+          onClick={() => setTool("water")}
+        >
+          Water channels
+        </button>
       </fieldset>
-      <fieldset disabled={disabled}>
-        <legend>Choose the seed breeze</legend>
-        <div className="choice-row">
+      {tool === "seeds" && (
+        <>
+          <fieldset disabled={disabled}>
+            <legend>Choose a seed shape</legend>
+            <div className="choice-row">
+              <button
+                type="button"
+                aria-pressed={garden.shape === "round"}
+                onClick={() => dispatch({ type: "seed-shape", shape: "round" })}
+              >
+                Round · rolls close
+              </button>
+              <button
+                type="button"
+                aria-pressed={garden.shape === "feathered"}
+                onClick={() =>
+                  dispatch({ type: "seed-shape", shape: "feathered" })
+                }
+              >
+                Feathered · catches air
+              </button>
+            </div>
+          </fieldset>
+          <fieldset disabled={disabled}>
+            <legend>Choose the seed breeze</legend>
+            <div className="choice-row">
+              <button
+                type="button"
+                aria-pressed={garden.breeze === "shelter"}
+                onClick={() =>
+                  dispatch({ type: "seed-breeze", breeze: "shelter" })
+                }
+              >
+                Gentle cove breeze
+              </button>
+              <button
+                type="button"
+                aria-pressed={garden.breeze === "ridge"}
+                onClick={() =>
+                  dispatch({ type: "seed-breeze", breeze: "ridge" })
+                }
+              >
+                Ridge gust
+              </button>
+            </div>
+          </fieldset>
           <button
             type="button"
-            aria-pressed={garden.breeze === "shelter"}
-            onClick={() => dispatch({ type: "seed-breeze", breeze: "shelter" })}
+            className="launch-button"
+            disabled={disabled}
+            onClick={() => dispatch({ type: "sow-seed" })}
           >
-            Gentle cove breeze
+            Release a seed on the wind
           </button>
-          <button
-            type="button"
-            aria-pressed={garden.breeze === "ridge"}
-            onClick={() => dispatch({ type: "seed-breeze", breeze: "ridge" })}
-          >
-            Ridge gust
-          </button>
-        </div>
-      </fieldset>
-      <button
-        type="button"
-        className="launch-button"
-        disabled={disabled}
-        onClick={() => dispatch({ type: "sow-seed" })}
-      >
-        Release a seed on the wind
-      </button>
+        </>
+      )}
       <div className="seedwind-beds" aria-label="Your growing island garden">
         {beds.map((bed) => (
           <div
             key={bed.id}
-            className={`seedwind-bed ${garden.beds[bed.id] ? "growing" : ""}`}
+            className={`seedwind-bed ${garden.beds[bed.id] ? "growing" : ""} ${waterworks.flow[bed.id] ? "watered" : ""}`}
           >
             <span aria-hidden="true">
               {bed.mark} {"✿".repeat(garden.beds[bed.id]) || "·"}
             </span>
+            <p className="bed-water-response">
+              {bedResponse(garden.beds[bed.id], waterworks.flow[bed.id])}
+            </p>
             <strong>{bed.label}</strong>
             <span>
               {garden.beds[bed.id]
@@ -92,32 +127,47 @@ export function SeedwindGarden({
           </div>
         ))}
       </div>
-      <output className="seedwind-result" aria-live="polite">
-        {last
-          ? `${last.shape === "round" ? "Round" : "Feathered"} seed · ${last.breeze === "shelter" ? "gentle cove breeze" : "ridge gust"} · ${last.distance} m. A new shoot opens in the ${beds.find((bed) => bed.id === last.bed)?.label.toLowerCase()}.`
-          : "The soil is waiting. Try either seed; you do not need to finish a flight first."}
-      </output>
-      {last && (
-        <p>
-          Keep the breeze and change only the seed, or keep the seed and change
-          only the breeze. What changes in the garden?
-        </p>
+      {tool === "seeds" && (
+        <>
+          <output className="seedwind-result" aria-live="polite">
+            {last
+              ? `${last.shape === "round" ? "Round" : "Feathered"} seed · ${last.breeze === "shelter" ? "gentle cove breeze" : "ridge gust"} · ${last.distance} m. A new shoot opens in the ${beds.find((bed) => bed.id === last.bed)?.label.toLowerCase()}.`
+              : "The soil is waiting. Try either seed; you do not need to finish a flight first."}
+          </output>
+          {last && (
+            <p>
+              Keep the breeze and change only the seed, or keep the seed and
+              change only the breeze. What changes in the garden?
+            </p>
+          )}
+          {!!garden.trials.length && (
+            <ol
+              className="seedwind-trials"
+              aria-label="Your last seed experiments"
+            >
+              {garden.trials.map((trial, index) => (
+                <li key={`${index}-${trial.shape}-${trial.breeze}`}>
+                  {trial.shape} · {trial.breeze} · {trial.distance} m →{" "}
+                  {trial.bed}
+                </li>
+              ))}
+            </ol>
+          )}
+          <p className="island-small">
+            A toy wind-and-seed model, not real botany. Last four releases stay
+            in this tab; each bed shows up to three clumps. Pause keeps the
+            garden, reset clears it. Nothing is uploaded unless selected in
+            optional sharing.
+          </p>
+        </>
       )}
-      {!!garden.trials.length && (
-        <ol className="seedwind-trials" aria-label="Your last seed experiments">
-          {garden.trials.map((trial, index) => (
-            <li key={`${index}-${trial.shape}-${trial.breeze}`}>
-              {trial.shape} · {trial.breeze} · {trial.distance} m → {trial.bed}
-            </li>
-          ))}
-        </ol>
+      {tool === "water" && (
+        <GardenWaterworks
+          waterworks={waterworks}
+          disabled={disabled}
+          dispatch={dispatch}
+        />
       )}
-      <p className="island-small">
-        A toy wind-and-seed model, not real botany. Last four releases stay in
-        this tab; each bed shows up to three clumps. Pause keeps the garden,
-        reset clears it. Nothing is uploaded unless selected in optional
-        sharing.
-      </p>
     </section>
   );
 }

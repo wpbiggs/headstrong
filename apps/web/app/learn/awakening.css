@@ -326,6 +326,40 @@
 .seedwind-bed.growing {
   background: #214b41;
 }
+.seedwind-bed.watered {
+  outline: 2px solid #86d5df;
+  outline-offset: -2px;
+}
+.seedwind-bed .bed-water-response {
+  font-size: .8rem;
+}
+.garden-waterworks {
+  display: grid;
+  gap: 16px;
+  border-top: 1px solid var(--island-line);
+  padding-top: 24px;
+}
+.water-map {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  height: 180px;
+  color: #a2e2e8;
+  background: #102b3a;
+  border-radius: 12px;
+}
+.water-map text {
+  font-size: 12px;
+}
+.water-result {
+  display: block;
+  color: #b9e6cf;
+}
+.water-history {
+  margin: 0;
+  padding-left: 22px;
+  color: #b9cece;
+}
 .seedwind-bed > span:first-child {
   color: #f5ce82;
   min-height: 2em;
