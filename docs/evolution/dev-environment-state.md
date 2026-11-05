@@ -106,6 +106,15 @@ blossom versus wide-leaf responses, gate-preview separation, pause/resume, reset
 and desktop/mobile captures. No new sessions or remote learning-data writes.
 See [waterworks receipt and remaining gaps](garden-waterworks.md).
 
+**In-world controls follow-up:** source `a7f0c01` adds projected accessible
+landmark travel and nearby flight/seed/water/sky controls, reusing existing
+reducers and optional sharing boundaries. Current web version:
+`efda40d9-5538-4f81-8d6b-53a369ef000a`; API unchanged. All 17 gates and 38
+browser runs pass, including keyboard/touch, resize/disposal and non-WebGL play.
+Hosted OpenChamber Web verified landmark travel, seed/water choices, sky changes
+and a completed nearby-controls flight, with mobile/desktop visual evidence.
+No new sessions or remote learner writes. See [in-world receipt](in-world-island-controls.md).
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).

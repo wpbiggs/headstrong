@@ -1,6 +1,7 @@
 # In-world island controls
 
-Status: exact-source local acceptance passed; private rollout pending.
+Status: pushed and deployed to the owner-only synthetic preview; hosted
+OpenChamber Web loop verified. Not participant or production approval.
 
 ## Play beside the world
 
@@ -65,7 +66,7 @@ flight and repeated renderer-disposal checks. Existing optional sharing and
 trusted-feedback regression suites pass unchanged.
 
 Inspected ignored local captures: `test-results/world-controls-mobile.png` and
-`test-results/awakening-mobile-webgl.png`. Hosted acceptance remains pending.
+`test-results/awakening-mobile-webgl.png`. Hosted receipt follows below.
 
 ## Objective audit
 
@@ -80,3 +81,39 @@ The overall objective is not complete: longer-world depth/polish, broad real
 device/GPU coverage and real-user play evidence remain unestablished. Safe
 participant enrollment/guardian consent and deferred credential rotation remain
 open. This remains an owner-only synthetic preview, not a real-child release.
+
+## Hosted receipt
+
+- Source `a7f0c01` pushed after exact-source acceptance, then verified web output
+  deployed as `efda40d9-5538-4f81-8d6b-53a369ef000a`. API remains
+  `0254a354-35db-4696-aadf-86f55277010d`. No bindings, account roles, schema,
+  migrations, privileges or credentials changed.
+- In a fresh authenticated OpenChamber Web tab at mobile size, used the projected
+  Garden button rather than the permanent trail. Nearby tools switched to
+  feathered seeds/ridge breeze and explicitly released a seed: 14 m to terrace.
+- Selected split water route; nearby readout still showed zero actual water
+  until Pump water. The explicit pump produced 1/1/1 drops and three visible
+  channels/pools, with the planted terrace responding. Inspected the hosted
+  mobile world/landmark/control capture, not just the text status.
+- Used the projected Observatory button; nearby Project a kite and Spread the
+  lights changed the five world-space lights and the selected detailed controls.
+  Inspected the mobile sky/control capture. Pause removed landmarks/renderer
+  and disabled experimental actions; resume retained kite/close choices.
+- Follow the trail to workshop returned without requiring a completion gate.
+  Nearby Fit swept wings, Bank right and Take flight produced a 70 m flight,
+  the awake beacon and star flowers. Inspected the desktop capture containing
+  projected landmarks, nearby controls and the matching detailed flight result.
+- No application token, quiz, reflection, note, save or human-feedback action
+  was required in this loop. No sessions were provisioned or remote learning
+  records written, and no fresh remote mastery-count query is claimed. Paused
+  and closed the extra inspection tab; original island tab remains paused.
+- Signed-out HTML, actual new adventure JS and record-catalog route still
+  redirect to Access. Direct API workers.dev remains 404. Synthetic-only flag,
+  owner access scope, Access issuer/audience and service bindings are unchanged.
+  Deferred credential rotation is still unresolved.
+
+Ignored inspected captures:
+
+- `.openchamber/screenshots/hosted-world-garden-controls-2026-11-05T17-03-23-645.jpg`
+- `.openchamber/screenshots/hosted-world-sky-controls-2026-11-05T17-03-54-585.jpg`
+- `.openchamber/screenshots/hosted-world-flight-controls-desktop-2026-11-05T17-05-01-513.jpg`
