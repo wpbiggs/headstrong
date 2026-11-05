@@ -89,6 +89,15 @@ runs passed. Hosted OpenChamber Web verified guardian encouragement, an explicit
 selected educator assessment and learner sessions with no adult tools. Three
 temporary probes revoked; mastery zero. See [inbox receipt](trusted-discovery-inbox.md).
 
+**Island exploration follow-up:** source `ba2876b` plus desktop correction
+`2c0cf17` adds open workshop/garden/observatory navigation, held unfinished
+flights and local constellation/lens experiments. Current web version:
+`a94db807-1015-4286-936e-017919d564d6`; API unchanged from the inbox receipt.
+All 17 gates and 32 browser runs passed on the final source. Hosted OpenChamber
+Web verified world-space sky changes, garden visits and resumed flight; reviewed
+final desktop/mobile captures. No new sessions or remote data writes. See
+[trail receipt and objective audit](island-exploration-trail.md).
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).

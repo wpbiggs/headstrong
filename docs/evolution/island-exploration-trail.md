@@ -1,6 +1,7 @@
 # Island exploration trail
 
-Status: exact-source local release acceptance passed; private preview rollout pending.
+Status: pushed and deployed to the owner-only synthetic preview; hosted
+OpenChamber Web acceptance completed. Not participant or production approval.
 
 ## Adventure increment
 
@@ -59,8 +60,8 @@ capture at `test-results/observatory-mobile.png` (ignored).
 - Adventure-first entry and meaningful choice: demonstrated by the workshop,
   independent seed garden and open observatory; no dashboard or account needed.
 - Visible consequences: deterministic flight restoration, growing seed patches
-  and changing sky projections have local automated coverage. Hosted trail
-  visual acceptance is pending, not implied by local tests.
+  and changing sky projections have local automated coverage and the bounded
+  hosted checks below; broad device/GPU and real-user evidence remain absent.
 - No mandatory quiz/reflection: local browser tests finish experiments without
   submitting either. Optional note/save/inbox remains outside default play.
 - Optional trusted feedback: existing atomic sharing and scoped human-feedback
@@ -71,3 +72,46 @@ capture at `test-results/observatory-mobile.png` (ignored).
   interaction and polish, broad device/GPU evidence, real-user play evidence,
   and the explicitly deferred credential rotation. The overall objective is
   not complete.
+
+## Hosted receipt
+
+Initial source `ba2876b` deployed as web version
+`c3a7362a-4c5e-4cf0-8955-b8cf7aa322e4`. In the existing authenticated
+OpenChamber Web tab at mobile size, visited the observatory before any flight,
+inspected the five world-space lights, changed moth/wide to kite/close and
+inspected the resulting changed positions. Launched a glider, visited the seed
+garden during flight and confirmed the held-flight message. Released round/cove
+and feathered/ridge seeds, visited the observatory (kite/close still selected),
+then returned to the workshop; the held flight resumed and reached 70 m, waking
+the beacon. No application token, API call or saved discovery was needed for
+these interactions, and no hosted feedback/data mutation was performed.
+
+Desktop visual review exposed a real grid-row collision: the new navigation
+occupied the row previously assigned to the world/flight console. Follow-up
+`2c0cf17` gives the trail a full-width row above the world and places the garden
+or observatory controls beside the world on desktop. Added an explicit browser
+geometry assertion for this placement, re-ran all 17 gates/32 browser runs on
+unchanged source, and deployed that verified output as web version
+`a94db807-1015-4286-936e-017919d564d6`. API remains unchanged at
+`0254a354-35db-4696-aadf-86f55277010d`.
+
+A fresh authenticated OpenChamber Web tab confirmed the final stylesheet's
+grid layout and the corrected desktop capture. Also reviewed the final mobile
+kite/close SVG, explanation and privacy copy. Closed the additional inspection
+tab and left the original island paused. The initial immediate post-deploy
+navigation briefly displayed the previous release; a fresh request and later
+canonical `/learn` navigation showed the new trail. No cookie export or extra
+login was requested.
+
+Signed-out final HTML, the actual new adventure bundle and record-catalog route
+still redirect to Access; direct API workers.dev returns 404. Existing bindings,
+synthetic-only flag, Access issuer/audience and owner scope are unchanged. No
+new application sessions were provisioned, and deferred credentials were not
+rotated. This web-only increment does not claim a new remote mastery-count check.
+
+Ignored inspected captures:
+
+- `.openchamber/screenshots/hosted-trail-observatory-wide-2026-11-05T16-19-44-288.jpg`
+- `.openchamber/screenshots/hosted-trail-kite-close-2026-11-05T16-20-10-601.jpg`
+- `.openchamber/screenshots/trail-final-desktop-2026-11-05T16-28-04-401.jpg`
+- `.openchamber/screenshots/trail-final-mobile-sky-2026-11-05T16-28-39-097.jpg`
