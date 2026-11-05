@@ -1,6 +1,7 @@
 # Trusted discovery inbox
 
-Status: local release acceptance passed; private-preview rollout pending.
+Status: pushed and deployed to the existing owner-only synthetic preview.
+Actual OpenChamber Web inbox flow verified; not participant or production approval.
 
 ## Supporting the adventure
 
@@ -67,3 +68,43 @@ the new inbox requires a server-confirmed role and fails closed if absent. No
 migration is needed. The legacy workspace remains available for compatibility.
 Enrollment, longer-world polish, real-participant evidence and deferred
 credential rotation remain unfinished; the full objective is not complete.
+
+## Hosted rollout receipt
+
+- Source `1862478` pushed on the integration branch after acceptance. Deployed
+  API first, version `0254a354-35db-4696-aadf-86f55277010d`, then verified web
+  output, version `2cfc499b-f263-4333-bac1-b337778b4cab`. No migration, Access,
+  user-role, enrollment or permission change was applied.
+- The actual private API confirmed `viewerRole` as student/parent/educator for
+  the matching registered test sessions and included the new synthetic record
+  in their authorized catalogs. Record:
+  `a1b0833b-f771-4242-8d8d-5efdc495c9c5`. No existing private record was edited.
+- In the refreshed authenticated OpenChamber Web tab at 390px, explicitly opened
+  the new inbox, connected as guardian, found/opened that discovery and submitted
+  encouragement. The selected record disappeared from the pending list, the
+  saved reply stayed readable, and no educator-assessment tool was present.
+- Changing to the educator session cleared displayed records/replies. Find/Open
+  loaded the same record with the guardian comment visible and an unselected
+  human-assessment placeholder. Explicitly selected `needs_practice`, typed
+  feedback and submitted. Both separate replies and the immutable-saved message
+  appeared in the hosted mobile capture, which was inspected.
+- Changing to a learner session and requesting records showed the learner-session
+  explanation with no record-reading or adult-reply controls in this surface.
+  Clear connection removed the credential and private view; returned to the
+  paused island. This does not claim local clearing revokes a server session.
+- All three newly provisioned, short-lived browser probe sessions were then
+  revoked. Final database check: one guardian reply, educator `needs_practice`,
+  no ratings and mastery count zero. Signing secrets and protected operator/demo
+  configuration were not changed. No real participant data was used.
+- Signed-out HTML, the actual new adventure JS bundle and record catalog still
+  redirect to Access; direct API workers.dev returns 404. Synthetic-only flags
+  and owner-only access scope remain unchanged.
+- Ignored hosted evidence:
+  `.openchamber/screenshots/trusted-inbox-hosted-feedback-2026-11-05T15-52-41-115.jpg`.
+  Sanitized private-API setup receipt is in ignored
+  `artifacts/local-verification/hosted-inbox-setup-report.json`.
+
+The focused preview inbox addresses the overloaded adult workflow, not complete
+onboarding or a full multi-learner roster. Authorized results remain bounded to
+ten recent approved records. Participant enrollment/consent, longer adventure
+polish, real-user play evidence and deferred credential rotation are still open.

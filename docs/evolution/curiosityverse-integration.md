@@ -250,6 +250,11 @@ uploads notes, infers mastery or grants account/content authorization.
 
 ## Follow-up: trusted guardian encouragement
 
+**Trusted-adult workflow follow-up:** [focused inbox](trusted-discovery-inbox.md)
+adds pending/replied discovery views and server-scoped guardian/educator tools,
+separate from the learner setup/rating workflow. It is optional support behind
+the island footer, not default entry or a completion gate.
+
 **Adventure follow-up:** [Seedwind garden](seedwind-garden.md) adds independent
 seed-shape/breeze experiments and growing world patches without flight completion,
 quizzes or reflection. Optional garden sharing is separate and unchecked. Its

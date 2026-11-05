@@ -81,6 +81,14 @@ sessions are revoked; mastery remains zero. See
 [hosted acceptance receipt](hosted-browser-acceptance.md), which supersedes earlier
 unperformed-hosted-flow and black-capture limitations for these specific checks.
 
+**Trusted inbox follow-up:** source `1862478` adds the separate focused adult
+inbox and server-derived catalog `viewerRole`. Current API:
+`0254a354-35db-4696-aadf-86f55277010d`; current web:
+`2cfc499b-f263-4333-bac1-b337778b4cab`. All 17 release gates and 30 local browser
+runs passed. Hosted OpenChamber Web verified guardian encouragement, an explicitly
+selected educator assessment and learner sessions with no adult tools. Three
+temporary probes revoked; mastery zero. See [inbox receipt](trusted-discovery-inbox.md).
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).
