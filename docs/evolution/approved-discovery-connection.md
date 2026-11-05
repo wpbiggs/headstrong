@@ -1,5 +1,10 @@
 # Approved discovery connection
 
+**Later correction and hosted acceptance:** [OpenChamber Web receipt](hosted-browser-acceptance.md)
+records the loopback-API build defect, regression and `ea2fbb8` fix. Actual hosted
+browser save and both feedback roles are now verified for the synthetic fixture;
+the original receipt below correctly distinguishes its earlier API-only checks.
+
 Status: pushed and deployed to the existing owner-only synthetic preview.
 Migration 0016 is applied. This is not participant-test or production approval.
 

@@ -1,5 +1,10 @@
 # Seedwind garden adventure
 
+**Later hosted acceptance:** [OpenChamber Web receipt](hosted-browser-acceptance.md)
+records visible hosted 3D and actual seed-only save/guardian/educator/learner flow.
+It also records a deployed loopback-API defect found during that test and fixed
+in `ea2fbb8`. Earlier limitations below describe the original garden rollout.
+
 Status: pushed and deployed to the existing owner-only synthetic preview.
 Not real-participant or production approval.
 

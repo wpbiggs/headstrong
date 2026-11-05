@@ -71,6 +71,16 @@ play. Hosted browser verified contrasting 2/6/14 m outcomes and three growing te
 patches without a flight or account token. See [garden receipt](seedwind-garden.md)
 for full scope and the remaining hosted visual/enrollment/safeguarding limitations.
 
+**Hosted-browser correction:** `ea2fbb8` fixes inherited fixture API URLs in
+deployable vinext clients and adds a built-artifact regression. Current web:
+`e0460936-dc3a-42d4-90b2-07cb41043461`; API/schema unchanged. OpenChamber Web
+now verified actual approved adventure discovery, explicit seed-only saving,
+guardian encouragement, guardian assessment denial, educator feedback and learner
+refresh. The hosted 3D view is visibly rendered in a reviewed capture. Six probe
+sessions are revoked; mastery remains zero. See
+[hosted acceptance receipt](hosted-browser-acceptance.md), which supersedes earlier
+unperformed-hosted-flow and black-capture limitations for these specific checks.
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).
