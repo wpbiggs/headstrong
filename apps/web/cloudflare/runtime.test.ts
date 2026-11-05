@@ -1,11 +1,37 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { SignJWT, exportJWK, generateKeyPair } from "jose";
 import { createTestHarness } from "wrangler";
+
+test("deployable learning clients use the same-origin gateway despite inherited fixture environment", async () => {
+  const chunks = fileURLToPath(
+    new URL("../dist/client/_next/static/chunks/", import.meta.url),
+  );
+  const files = await readdir(chunks);
+  for (const component of ["awakening-adventure-", "learning-journey-panel-"]) {
+    const matches = files.filter(
+      (file) => file.startsWith(component) && file.endsWith(".js"),
+    );
+    assert.ok(matches.length, `missing built client ${component}`);
+    for (const file of matches) {
+      const source = await readFile(path.join(chunks, file), "utf8");
+      assert.equal(
+        /https?:\/\/(?:127\.0\.0\.1|localhost|\[::1\]):4000/.test(source),
+        false,
+        `${file} must not send a hosted session to a loopback fixture`,
+      );
+      assert.match(
+        source,
+        /["'`]\/api["'`]/,
+        `${file} must compile the same-origin API prefix`,
+      );
+    }
+  }
+});
 
 test("built web Worker authenticates HTML and assets and fails closed in workerd", async (t) => {
   const issuer = "https://runtime-fixture.cloudflareaccess.com";
