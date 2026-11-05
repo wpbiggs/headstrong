@@ -1,6 +1,7 @@
 # Garden waterworks
 
-Status: exact-source local release acceptance passed; private rollout pending.
+Status: pushed and deployed to the owner-only synthetic preview; hosted
+OpenChamber Web interaction checked. Not participant or production approval.
 
 ## A deeper garden experiment
 
@@ -77,3 +78,37 @@ longer-world play, broader device/GPU testing and real-user evidence, safe
 participant enrollment/guardian consent and the explicitly deferred credential
 rotation. The preview remains synthetic and owner-only; no real-child release
 or learning effectiveness claim follows from automated acceptance.
+
+## Hosted receipt
+
+- Source `ea5eaf4` pushed after the full exact-source gate, then the verified
+  web output deployed as `31c1ce97-331e-44ff-a530-29f16a18d4d6`. API remains
+  `0254a354-35db-4696-aadf-86f55277010d`; no remote schema/data/role change.
+- In a fresh authenticated OpenChamber Web tab, entered the garden without
+  launching a flight, selected Water channels and poured a cove cup before any
+  seed. The empty cove showed ripples; the other beds stayed quiet.
+- Switched to Seed breeze, planted one round seed, then returned to water tools.
+  The already-watered cove had a tall golden blossom in both geometry and text.
+- Selected Split three ways: preview changed to 1/1/1 while the actual last-cup
+  map and planted cove remained 3/0/0. Only the explicit Pour changed the world
+  to three channels/pools and the same planted cove to low, wide leaves. Inspected
+  focused/split desktop captures, including the sleeping beacon and untouched
+  glider, rather than accepting the presence of a canvas as visual evidence.
+- Stop & rest removed the renderer and disabled pouring; resume retained the
+  split flow, planted bed and two-entry history. Reviewed the mobile controls,
+  equivalent route diagram and care-timer/privacy explanation. Reset returned
+  to the workshop; revisiting Water channels showed all flows at zero, empty
+  beds, the waiting-pump message and no route history.
+- No application credential, save or feedback action was needed. Provisioned
+  no new sessions and performed no remote learning-data write or new mastery
+  query. Closed the extra inspection tab; original island tab remains paused.
+- Signed-out `/learn`, actual new adventure JS and record-catalog route still
+  redirect to Access. Direct API workers.dev remains 404. Synthetic-only flag,
+  Access issuer/audience, owner scope and bindings unchanged. Deferred credential
+  rotation remains untouched and unresolved.
+
+Ignored inspected captures:
+
+- `.openchamber/screenshots/hosted-waterworks-focused-stream-2026-11-05T16-44-04-240.jpg`
+- `.openchamber/screenshots/hosted-waterworks-split-stream-2026-11-05T16-44-38-619.jpg`
+- `.openchamber/screenshots/hosted-waterworks-mobile-2026-11-05T16-45-23-037.jpg`

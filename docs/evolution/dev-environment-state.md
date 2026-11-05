@@ -98,6 +98,14 @@ Web verified world-space sky changes, garden visits and resumed flight; reviewed
 final desktop/mobile captures. No new sessions or remote data writes. See
 [trail receipt and objective audit](island-exploration-trail.md).
 
+**Garden waterworks follow-up:** source `ea5eaf4` adds optional seed/water tool
+views, one-cup routing and plant responses in the same local world. Current web
+version `31c1ce97-331e-44ff-a530-29f16a18d4d6`; API unchanged. All 17 gates/34
+browser runs pass. Hosted OpenChamber Web verified empty-bed ripples, planted
+blossom versus wide-leaf responses, gate-preview separation, pause/resume, reset
+and desktop/mobile captures. No new sessions or remote learning-data writes.
+See [waterworks receipt and remaining gaps](garden-waterworks.md).
+
 ## Applied and verified
 
 - Cloudflare account: `b7019b91654de6e62fb986cd0864cba2` (wbiggers60@gmail.com).
