@@ -10,10 +10,46 @@ import {
   awakeningExperience,
   islandReducer,
   newIsland,
+  skyProjection,
 } from "./awakening";
 import { discoverySummary, isAwakeningRecord } from "./awakening-discovery";
 import { sampleExperience } from "./sample-experience";
 import { newSeedGarden, seedGardenReducer, seedTrial } from "./seedwind";
+
+test("trail preserves unfinished flights, scopes experiments and never gates the observatory", () => {
+  let state = islandReducer(newIsland(), { type: "launch" });
+  state = islandReducer(state, { type: "tick" });
+  const flight = state.flight;
+  state = islandReducer(state, { type: "visit", location: "observatory" });
+  assert.equal(state.restored, false);
+  assert.equal(islandReducer(state, { type: "tick" }), state);
+  assert.equal(islandReducer(state, { type: "steer", lane: 1 }), state);
+  assert.equal(islandReducer(state, { type: "sow-seed" }), state);
+  state = islandReducer(state, { type: "lens", lens: "close" });
+  assert.equal(skyProjection(state.sky)[0][0], -3.2);
+  state = islandReducer(state, {
+    type: "constellation",
+    constellation: "kite",
+  });
+  assert.deepEqual(skyProjection(state.sky)[0], [0, 3.2]);
+  state = islandReducer(state, { type: "pause" });
+  assert.equal(
+    islandReducer(state, { type: "visit", location: "garden" }),
+    state,
+  );
+  assert.equal(islandReducer(state, { type: "lens", lens: "wide" }), state);
+  state = islandReducer(state, { type: "resume" });
+  state = islandReducer(state, { type: "visit", location: "garden" });
+  state = islandReducer(state, { type: "sow-seed" });
+  assert.equal(state.garden.trials.length, 1);
+  assert.deepEqual(state.flight, flight);
+  state = islandReducer(state, { type: "visit", location: "workshop" });
+  assert.equal(
+    islandReducer(state, { type: "tick" }).flight.ticks,
+    flight.ticks + 1,
+  );
+  assert.deepEqual(islandReducer(state, { type: "reset" }), newIsland());
+});
 
 test("seed shape and wind independently change dispersal, every bed can grow without a flight", () => {
   assert.deepEqual(seedTrial("round", "shelter"), {
@@ -26,6 +62,7 @@ test("seed shape and wind independently change dispersal, every bed can grow wit
   assert.equal(seedTrial("feathered", "shelter").distance, 6);
   assert.equal(seedTrial("feathered", "ridge").distance, 14);
   let island = newIsland();
+  island = islandReducer(island, { type: "visit", location: "garden" });
   island = islandReducer(island, { type: "sow-seed" });
   assert.equal(island.garden.beds.cove, 1);
   island = islandReducer(island, { type: "seed-shape", shape: "feathered" });

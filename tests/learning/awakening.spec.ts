@@ -1,5 +1,82 @@
 import { expect, test } from "@playwright/test";
 
+test("open trail preserves a flight and offers local sky experiments without uploads", async ({
+  page,
+}) => {
+  const calls: string[] = [];
+  const resizeErrors: string[] = [];
+  page.on("pageerror", (error) => {
+    if (error.message.includes("ResizeObserver"))
+      resizeErrors.push(error.message);
+  });
+  page.on("request", (r) => {
+    if (r.url().includes("/learning/")) calls.push(r.url());
+  });
+  await page.goto("/learn");
+  await expect(
+    page.getByRole("button", { name: "Observatory", exact: true }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: "Observatory", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("region", { name: "Observatory experiments" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Flight controls" }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Kite constellation" }).click();
+  await page.getByRole("button", { name: "Close lens", exact: true }).click();
+  await expect(
+    page.getByRole("img", { name: /kite constellation, close lens/ }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Workshop", exact: true }).click();
+  await page.getByRole("button", { name: "Launch glider" }).click();
+  await expect(page.locator(".flight-readout")).not.toContainText("0 / 70 m");
+  await page.getByRole("button", { name: "Seed garden", exact: true }).click();
+  await expect(
+    page.getByRole("navigation", { name: "Island trail" }).getByRole("status"),
+  ).toContainText("unfinished flight is held");
+  await page
+    .getByRole("button", { name: "Release a seed on the wind" })
+    .click();
+  await page.keyboard.press("ArrowRight");
+  await page.getByRole("button", { name: "Stop & rest", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Observatory", exact: true }),
+  ).toBeDisabled();
+  await page
+    .getByRole("button", { name: "Resume adventure", exact: true })
+    .first()
+    .click();
+  await page.getByRole("button", { name: "Observatory", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Close lens", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await page
+    .getByRole("region", { name: "Observatory experiments" })
+    .screenshot({ path: "test-results/observatory-mobile.png" });
+  await page.getByRole("button", { name: "Workshop", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "← Sheltered cove", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByRole("heading", { name: "You carried the spark." }),
+  ).toBeVisible({ timeout: 15000 });
+  expect(calls).toEqual([]);
+  expect(resizeErrors).toEqual([]);
+  await page.getByRole("button", { name: "Reset island", exact: true }).click();
+  await page.getByRole("button", { name: "Observatory", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Wide lens", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+});
+
 test("closing or changing the discovery session discards late responses and never uploads notes", async ({
   page,
   request,
@@ -425,7 +502,7 @@ test("touch-sized controls and full experiment remain usable without WebGL or re
   });
   await page.goto("/learn");
   await expect(page.getByText(/3D unavailable/)).toBeVisible();
-  await page.getByRole("link", { name: "Build & fly" }).tap();
+  await page.getByRole("button", { name: "Build & fly" }).tap();
   await page.getByRole("button", { name: "Swept · wind-cutting" }).tap();
   await page.getByRole("button", { name: "Ridge crosswind" }).tap();
   await expect(
@@ -480,7 +557,7 @@ test("mobile WebGL view renders, touch flight restores world, repeated pause/res
     path: "test-results/awakening-mobile-webgl.png",
     fullPage: true,
   });
-  await page.getByRole("link", { name: "Build & fly" }).tap();
+  await page.getByRole("button", { name: "Build & fly" }).tap();
   await page.getByRole("button", { name: "Launch glider" }).tap();
   await expect(
     page.getByRole("heading", { name: "You carried the spark." }),

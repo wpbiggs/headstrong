@@ -1,5 +1,5 @@
 import type { ExperienceSpec } from "@headstrong/core";
-import type { Island } from "./awakening";
+import { type Island, skyProjection } from "./awakening";
 
 // Only this adapter knows the renderer. No content scripts, URLs, assets, API or storage.
 export async function mountAwakening(
@@ -13,6 +13,7 @@ export async function mountAwakening(
   });
   const materials: InstanceType<typeof pc.StandardMaterial>[] = [];
   let resize: ResizeObserver | undefined;
+  let resizeFrame: number | undefined;
   try {
     app.setCanvasFillMode(pc.FILLMODE_NONE);
     app.setCanvasResolution(pc.RESOLUTION_AUTO);
@@ -142,6 +143,24 @@ export async function mountAwakening(
         sleeping,
       );
     });
+    const skyLights = Array.from({ length: 5 }, (_, i) =>
+      shape(
+        `Projected star ${i + 1}`,
+        "sphere",
+        [0, 5, beaconZ],
+        [0.24, 0.24, 0.24],
+        spark,
+      ),
+    );
+    // A walkable-looking causeway connects stops without a gameplay unlock.
+    for (let i = 0; i < 12; i++)
+      shape(
+        "Trail stepping stone",
+        "cylinder",
+        [-3.6, -0.15, -1 - i],
+        [0.65, 0.18, 0.65],
+        brass,
+      );
     const seedBeds = (["cove", "slope", "terrace"] as const).map(
       (bed, index) => {
         const x = -5 + index * 2;
@@ -251,6 +270,23 @@ export async function mountAwakening(
     app.on("update", () => {
       const s = read();
       const f = s.flight;
+      if (s.location === "garden") {
+        camera.setPosition(12, 18, 10);
+        camera.lookAt(-3, 0, -6);
+      } else if (s.location === "observatory") {
+        camera.setPosition(12, 15, beaconZ + 15);
+        camera.lookAt(0, 3, beaconZ);
+      } else {
+        camera.setPosition(19, 22, 18);
+        camera.lookAt(0, 0, -6);
+      }
+      if (camera.camera)
+        camera.camera.orthoHeight = s.location === "workshop" ? 12 : 8;
+      const projection = skyProjection(s.sky);
+      skyLights.forEach((star, i) => {
+        star.enabled = s.location === "observatory";
+        star.setPosition(projection[i][0], 5 + projection[i][1], beaconZ);
+      });
       for (const { bed, clumps } of seedBeds)
         for (let i = 0; i < clumps.length; i++)
           clumps[i].enabled = i < s.garden.beds[bed];
@@ -286,19 +322,29 @@ export async function mountAwakening(
       // Fixed scale keeps the island legible on narrow touch screens too.
       if (camera.camera) camera.camera.orthoHeight = 12;
     };
-    resize = new ResizeObserver(fit);
+    // Resizing the canvas changes its observed parent. Defer writes out of the
+    // observer delivery cycle so mobile/layout changes cannot form a loop.
+    resize = new ResizeObserver(() => {
+      if (resizeFrame !== undefined) return;
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = undefined;
+        fit();
+      });
+    });
     resize.observe(container ?? canvas);
     app.start();
     fit();
     return {
       destroy() {
         resize?.disconnect();
+        if (resizeFrame !== undefined) cancelAnimationFrame(resizeFrame);
         for (const m of materials) m.destroy();
         app.destroy();
       },
     };
   } catch (error) {
     resize?.disconnect();
+    if (resizeFrame !== undefined) cancelAnimationFrame(resizeFrame);
     for (const m of materials) m.destroy();
     app.destroy();
     throw error;

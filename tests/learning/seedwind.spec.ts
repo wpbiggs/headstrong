@@ -24,6 +24,7 @@ test("seed choices grow contrasting patches without WebGL, accounts, flights or 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/learn");
   await expect(page.getByText(/3D unavailable/)).toBeVisible();
+  await page.getByRole("button", { name: "Seed garden", exact: true }).click();
   const garden = page.getByRole("region", { name: "Seedwind garden" });
   await garden
     .getByRole("button", { name: "Release a seed on the wind" })
@@ -68,6 +69,7 @@ test("seed choices grow contrasting patches without WebGL, accounts, flights or 
     .first()
     .click();
   await expect(garden.locator(".seedwind-bed.growing")).toHaveCount(3);
+  await page.getByRole("button", { name: "Workshop", exact: true }).click();
   await page.getByRole("button", { name: /Optional: leave/ }).click();
   await page
     .getByRole("textbox", { name: /What surprised/ })
@@ -108,6 +110,7 @@ test("seed choices grow contrasting patches without WebGL, accounts, flights or 
   );
   await page.getByRole("button", { name: /Back to paused island/ }).click();
   await page.getByRole("button", { name: "Reset island", exact: true }).click();
+  await page.getByRole("button", { name: "Seed garden", exact: true }).click();
   await expect(page.locator(".seedwind-bed.growing")).toHaveCount(0);
   await expect(garden.locator("output")).toContainText("The soil is waiting");
 });
@@ -119,6 +122,7 @@ test("3D garden renders and survives renderer disposal without extra plant growt
   await expect(
     page.getByText("PlayCanvas ready — island view", { exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Seed garden", exact: true }).click();
   const garden = page.getByRole("region", { name: "Seedwind garden" });
   await garden
     .getByRole("button", { name: "Release a seed on the wind" })

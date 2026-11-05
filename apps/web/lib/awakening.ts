@@ -75,6 +75,31 @@ export const awakeningExperience = experienceSpecSchema.parse({
 
 export type Wing = "wide" | "swept";
 export type Lane = -1 | 1;
+export type IslandLocation = "workshop" | "garden" | "observatory";
+export type Observatory = {
+  constellation: "moth" | "kite";
+  lens: "wide" | "close";
+};
+export function skyProjection(sky: Observatory) {
+  const points =
+    sky.constellation === "moth"
+      ? [
+          [-2, 1],
+          [-1, -1],
+          [0, 0],
+          [1, -1],
+          [2, 1],
+        ]
+      : [
+          [0, 2],
+          [-1, 0],
+          [0, -2],
+          [1, 0],
+          [0, 0],
+        ];
+  const scale = sky.lens === "wide" ? 1 : 1.6;
+  return points.map(([x, y]) => [x * scale, y * scale]);
+}
 export type Flight = {
   phase: "ready" | "flying" | "landed";
   wing: Wing;
@@ -88,6 +113,8 @@ export type Attempt = Pick<Flight, "wing" | "distance" | "reached"> & {
   route: string;
 };
 export type Island = {
+  location: IslandLocation;
+  sky: Observatory;
   garden: SeedGarden;
   flight: Flight;
   attempts: Attempt[];
@@ -98,6 +125,9 @@ export type Island = {
 };
 export type IslandAction =
   | SeedAction
+  | { type: "visit"; location: IslandLocation }
+  | { type: "constellation"; constellation: Observatory["constellation"] }
+  | { type: "lens"; lens: Observatory["lens"] }
   | { type: "wing"; wing: Wing }
   | { type: "steer"; lane: Lane }
   | {
@@ -122,6 +152,8 @@ const readyFlight = (wing: Wing = "wide", lane: Lane = -1): Flight => ({
   reached: false,
 });
 export const newIsland = (): Island => ({
+  location: "workshop",
+  sky: { constellation: "moth", lens: "wide" },
   garden: newSeedGarden(),
   flight: readyFlight(),
   attempts: [],
@@ -138,12 +170,30 @@ export function islandReducer(state: Island, action: IslandAction): Island {
   if (action.type === "pause") return { ...state, paused: true };
   if (action.type === "resume") return { ...state, paused: false };
   if (state.paused) return state;
+  if (action.type === "visit") return { ...state, location: action.location };
+  if (action.type === "constellation")
+    return state.location === "observatory"
+      ? { ...state, sky: { ...state.sky, constellation: action.constellation } }
+      : state;
+  if (action.type === "lens")
+    return state.location === "observatory"
+      ? { ...state, sky: { ...state.sky, lens: action.lens } }
+      : state;
+  if (
+    action.type === "seed-shape" ||
+    action.type === "seed-breeze" ||
+    action.type === "sow-seed"
+  ) {
+    return state.location === "garden"
+      ? {
+          ...state,
+          garden: seedGardenReducer(state.garden, action),
+        }
+      : state;
+  }
+  if (state.location !== "workshop") return state;
   const f = state.flight;
   switch (action.type) {
-    case "seed-shape":
-    case "seed-breeze":
-    case "sow-seed":
-      return { ...state, garden: seedGardenReducer(state.garden, action) };
     case "wing":
       return f.phase === "ready"
         ? { ...state, flight: { ...f, wing: action.wing } }
