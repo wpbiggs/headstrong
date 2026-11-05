@@ -1,5 +1,120 @@
 import { expect, test } from "@playwright/test";
 
+test("world landmarks and nearby tools support a complete local play loop", async ({
+  page,
+}) => {
+  const calls: string[] = [];
+  const errors: string[] = [];
+  page.on("request", (r) => {
+    if (r.url().includes("/learning/")) calls.push(r.url());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/learn");
+  await expect(
+    page.getByText("PlayCanvas ready — island view", { exact: true }),
+  ).toBeVisible();
+  const landmarks = page.getByRole("navigation", { name: "Island landmarks" });
+  const quick = page.getByRole("region", { name: "Play at this stop" });
+  await expect(landmarks.getByRole("button")).toHaveCount(3);
+  await landmarks
+    .getByRole("button", { name: "Travel to seed garden", exact: true })
+    .focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    quick.getByRole("heading", { name: "Among the seed beds" }),
+  ).toBeVisible();
+  await quick.getByRole("button", { name: "Try feathered seeds" }).click();
+  await quick.getByRole("button", { name: "Try ridge breeze" }).click();
+  await quick.getByRole("button", { name: "Send a seed" }).click();
+  await expect(quick).toContainText("Last seed: 14 m → terrace");
+  await quick.getByLabel("Island water gate").selectOption("split");
+  await expect(quick).toContainText("Last cup: cove 0, slope 0, terrace 0");
+  await quick.getByRole("button", { name: "Pump water" }).click();
+  await expect(quick).toContainText("Last cup: cove 1, slope 1, terrace 1");
+  await landmarks
+    .getByRole("button", { name: "Travel to observatory", exact: true })
+    .click();
+  await quick.getByRole("button", { name: "Project a kite" }).click();
+  await quick.getByRole("button", { name: "Spread the lights" }).click();
+  await expect(quick).toContainText("kite constellation · close lens");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect
+    .poll(async () =>
+      page.locator(".world-stage").evaluate((stage) => {
+        const bounds = stage.getBoundingClientRect();
+        return [...stage.querySelectorAll("button")].every((button) => {
+          const rect = button.getBoundingClientRect();
+          return (
+            rect.left >= bounds.left &&
+            rect.right <= bounds.right &&
+            rect.top >= bounds.top &&
+            rect.bottom <= bounds.bottom
+          );
+        });
+      }),
+    )
+    .toBeTruthy();
+  await page
+    .locator(".island-world")
+    .screenshot({ path: "test-results/world-controls-mobile.png" });
+  await page.getByRole("button", { name: "Stop & rest", exact: true }).click();
+  await expect(landmarks).toHaveCount(0);
+  await expect(
+    quick.getByRole("button", { name: "Project a moth" }),
+  ).toBeDisabled();
+  await page
+    .getByRole("button", { name: "Resume adventure", exact: true })
+    .first()
+    .click();
+  await expect(landmarks.getByRole("button")).not.toHaveCount(0);
+  await quick
+    .getByRole("button", { name: "Follow the trail to workshop" })
+    .click();
+  await quick.getByRole("button", { name: "Fit swept wings" }).click();
+  await quick.getByRole("button", { name: "Bank right" }).click();
+  await quick.getByRole("button", { name: "Take flight" }).click();
+  await expect(quick).toContainText("Beacon awake.", { timeout: 15000 });
+  expect(calls).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test("nearby world tools remain usable without WebGL and never choose a save", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<typeof original>
+    ) {
+      if (String(args[0]).includes("webgl")) return null;
+      return original.apply(this, args);
+    } as typeof original;
+  });
+  await page.goto("/learn");
+  await expect(page.getByText(/3D unavailable/)).toBeVisible();
+  await expect(
+    page
+      .getByRole("navigation", { name: "Island landmarks" })
+      .getByRole("button"),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Seed garden", exact: true }).click();
+  const quick = page.getByRole("region", { name: "Play at this stop" });
+  await quick.getByRole("button", { name: "Send a seed" }).focus();
+  await page.keyboard.press("Enter");
+  await quick.getByRole("button", { name: "Pump water" }).click();
+  await expect(quick).toContainText("Last seed: 2 m → cove");
+  await expect(quick).toContainText("Last cup: cove 3, slope 0, terrace 0");
+  await quick.getByRole("button", { name: "More experiment tools" }).click();
+  await expect(page.locator(".seedwind-bed").nth(0)).toContainText(
+    "tall golden blossoms",
+  );
+  await page
+    .getByRole("button", { name: "Save an island discovery (optional)" })
+    .click();
+  await expect(page.getByLabel("Share seed experiments (1)")).not.toBeChecked();
+});
+
 test("open trail preserves a flight and offers local sky experiments without uploads", async ({
   page,
 }) => {
@@ -574,6 +689,17 @@ test("mobile WebGL view renders, touch flight restores world, repeated pause/res
     path: "test-results/awakening-mobile-webgl.png",
     fullPage: true,
   });
+  await page
+    .getByRole("button", { name: "Travel to seed garden", exact: true })
+    .tap();
+  const nearby = page.getByRole("region", { name: "Play at this stop" });
+  await nearby.getByRole("button", { name: "Send a seed" }).tap();
+  await nearby.getByLabel("Island water gate").selectOption("cove");
+  await nearby.getByRole("button", { name: "Pump water" }).tap();
+  await expect(nearby).toContainText("Last cup: cove 3, slope 0, terrace 0");
+  await nearby
+    .getByRole("button", { name: "Follow the trail to workshop" })
+    .tap();
   await page.getByRole("button", { name: "Build & fly" }).tap();
   await page.getByRole("button", { name: "Launch glider" }).tap();
   await expect(

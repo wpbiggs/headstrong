@@ -16,6 +16,45 @@ import { discoverySummary, isAwakeningRecord } from "./awakening-discovery";
 import { sampleExperience } from "./sample-experience";
 import { newSeedGarden, seedGardenReducer, seedTrial } from "./seedwind";
 import { bedResponse, routeWater } from "./waterworks";
+import { layoutWorldMarkers } from "./world-wayfinding";
+
+test("projected landmark touch targets stay bounded and separated at phone and desktop sizes", () => {
+  for (const width of [150, 358, 900]) {
+    const points = layoutWorldMarkers(
+      [
+        { location: "workshop", x: width / 2, y: 100 },
+        { location: "garden", x: width / 2, y: 100 },
+        { location: "observatory", x: width / 2, y: 100 },
+      ],
+      width,
+      340,
+    );
+    assert.equal(points.length, 3);
+    for (const point of points) {
+      assert.ok(
+        (point.x * width) / 100 >= 58 && (point.x * width) / 100 <= width - 58,
+      );
+      assert.ok((point.y * 340) / 100 >= 28 && (point.y * 340) / 100 <= 312);
+    }
+    for (let i = 0; i < points.length; i++)
+      for (let j = i + 1; j < points.length; j++)
+        assert.ok(Math.abs(points[i].y - points[j].y) * 3.4 >= 51.9);
+  }
+  assert.deepEqual(
+    layoutWorldMarkers(
+      [
+        { location: "workshop", x: Number.NaN, y: 100 },
+        { location: "garden", x: -10, y: 100 },
+        { location: "observatory", x: 20, y: 400 },
+      ],
+      358,
+      340,
+    ),
+    [],
+  );
+  assert.deepEqual(layoutWorldMarkers([], 0, 340), []);
+  assert.deepEqual(layoutWorldMarkers([], 358, Number.POSITIVE_INFINITY), []);
+});
 
 test("water routing conserves one cup, interacts with seeds and never becomes a care timer", () => {
   for (const gate of ["cove", "slope", "terrace", "split"] as const) {

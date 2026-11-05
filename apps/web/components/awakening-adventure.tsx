@@ -9,7 +9,9 @@ import {
   awakeningExperience as spec,
 } from "../lib/awakening";
 import { mountAwakening } from "../lib/playcanvas-awakening";
+import type { WorldMarker } from "../lib/world-wayfinding";
 import { DiscoverySavePanel } from "./discovery-save-panel";
+import { IslandWorldControls } from "./island-world-controls";
 import { LearningJourneyPanel } from "./learning-journey-panel";
 import { SeedwindGarden } from "./seedwind-garden";
 import { TrustedDiscoveryInbox } from "./trusted-discovery-inbox";
@@ -23,6 +25,7 @@ export function AwakeningAdventure() {
   const [reflection, setReflection] = useState(false);
   const [ready, setReady] = useState(false);
   const [renderer, setRenderer] = useState("Waking the island…");
+  const [markers, setMarkers] = useState<WorldMarker[]>([]);
   const canvas = useRef<HTMLCanvasElement>(null);
   const current = useRef(island);
   current.current = island;
@@ -35,7 +38,15 @@ export function AwakeningAdventure() {
     let cancelled = false;
     let mounted: Awaited<ReturnType<typeof mountAwakening>> | undefined;
     setRenderer("Waking the island…");
-    mountAwakening(canvas.current, spec, () => current.current)
+    setMarkers([]);
+    mountAwakening(
+      canvas.current,
+      spec,
+      () => current.current,
+      (points) => {
+        if (!cancelled) setMarkers(points);
+      },
+    )
       .then((instance) => {
         if (cancelled) {
           instance.destroy();
@@ -45,10 +56,12 @@ export function AwakeningAdventure() {
         setRenderer("PlayCanvas ready — island view");
       })
       .catch(() => {
-        if (!cancelled)
+        if (!cancelled) {
+          setMarkers([]);
           setRenderer(
-            "3D unavailable — the complete text flight and controls still work below.",
+            "3D unavailable — all island experiments still work with text and controls below.",
           );
+        }
       });
     return () => {
       cancelled = true;
@@ -232,10 +245,37 @@ export function AwakeningAdventure() {
           </span>
         </div>
         {playing ? (
-          <canvas
-            ref={canvas}
-            aria-label="Glider, Lumiling, observatory and seed garden; equivalent text and controls below"
-          />
+          <div className="world-stage">
+            <canvas
+              ref={canvas}
+              aria-label="Glider, Lumiling, observatory and seed garden; equivalent text and controls below"
+            />
+            <nav className="world-landmarks" aria-label="Island landmarks">
+              {markers.map((marker) => (
+                <button
+                  type="button"
+                  className="world-landmark"
+                  key={marker.location}
+                  aria-label={`Travel to ${marker.location === "garden" ? "seed garden" : marker.location}`}
+                  title={`Travel to ${marker.location}`}
+                  aria-current={
+                    island.location === marker.location ? "location" : undefined
+                  }
+                  disabled={!ready || island.location === marker.location}
+                  style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+                  onClick={() =>
+                    dispatch({ type: "visit", location: marker.location })
+                  }
+                >
+                  {marker.location === "garden"
+                    ? "Garden"
+                    : marker.location === "workshop"
+                      ? "Workshop"
+                      : "Observatory"}
+                </button>
+              ))}
+            </nav>
+          </div>
         ) : (
           <div className="island-rest">
             <span aria-hidden="true">☾</span>
@@ -252,6 +292,11 @@ export function AwakeningAdventure() {
         <p className="render-status">
           {playing ? renderer : "Paused — flight clock and renderer stopped."}
         </p>
+        <IslandWorldControls
+          island={island}
+          disabled={!ready || !playing}
+          dispatch={dispatch}
+        />
       </section>
 
       {island.location === "workshop" && (
@@ -458,7 +503,11 @@ export function AwakeningAdventure() {
         />
       )}
       {island.location === "observatory" && (
-        <section className="sky-workshop" aria-label="Observatory experiments">
+        <section
+          className="sky-workshop"
+          id="sky-controls"
+          aria-label="Observatory experiments"
+        >
           <p className="island-eyebrow">A WINDOW INTO POSSIBILITY</p>
           <h2>Make a little sky.</h2>
           <p>

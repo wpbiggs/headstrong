@@ -161,6 +161,64 @@
   width: 100%;
   height: 460px;
 }
+.world-stage {
+  position: relative;
+}
+.world-landmarks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.awakening .world-landmark {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 108px;
+  min-height: 46px;
+  padding: 8px 4px;
+  background: #173843ed;
+  border-color: #bce6da;
+  font-size: .75rem;
+  pointer-events: auto;
+}
+.awakening .world-landmark[aria-current="location"] {
+  background: #3b493e;
+  border-color: #f4c77c;
+  opacity: 0.9;
+}
+.world-quick-controls {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border-top: 1px solid var(--island-line);
+}
+.world-quick-controls h2 {
+  font-family: inherit;
+  font-size: 1rem;
+}
+.world-quick-controls p {
+  font-size: .85rem;
+}
+.world-water-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin-top: 12px;
+}
+.world-water-choice label {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.world-water-choice select {
+  width: 100%;
+  min-height: 46px;
+  padding: 8px;
+  font: inherit;
+  color: #122c36;
+  background: #f1eadb;
+}
 .render-status {
   padding: 8px 18px;
   font-size: .72rem;

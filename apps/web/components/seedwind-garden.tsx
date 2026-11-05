@@ -26,7 +26,11 @@ export function SeedwindGarden({
   const last = garden.trials.at(-1);
   const [tool, setTool] = useState<"seeds" | "water">("seeds");
   return (
-    <section className="seedwind-garden" aria-label="Seedwind garden">
+    <section
+      className="seedwind-garden"
+      id="garden-controls"
+      aria-label="Seedwind garden"
+    >
       <p className="island-eyebrow">ANOTHER PATH / THE SEEDWIND GARDEN</p>
       <h2>Where will the wind plant a forest?</h2>
       <p>

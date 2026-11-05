@@ -1,11 +1,13 @@
 import type { ExperienceSpec } from "@headstrong/core";
 import { type Island, skyProjection } from "./awakening";
+import { type WorldMarker, layoutWorldMarkers } from "./world-wayfinding";
 
 // Only this adapter knows the renderer. No content scripts, URLs, assets, API or storage.
 export async function mountAwakening(
   canvas: HTMLCanvasElement,
   spec: ExperienceSpec,
   read: () => Island,
+  onMarkers: (markers: WorldMarker[]) => void = () => {},
 ) {
   const pc = await import("playcanvas");
   const app = new pc.Application(canvas, {
@@ -358,6 +360,36 @@ export async function mountAwakening(
         s.creature ? x - 1 : -2.8,
         s.creature ? f.height / 3 + 1 : 1.4,
         s.creature ? -f.distance / 5 + 1 : -2,
+      );
+    });
+    let lastMarkerView = "";
+    app.on("postrender", () => {
+      const width = app.graphicsDevice.clientRect.width;
+      const height = app.graphicsDevice.clientRect.height;
+      const key = `${read().location}:${width}:${height}`;
+      if (key === lastMarkerView || !camera.camera) return;
+      lastMarkerView = key;
+      const stops = [
+        { location: "workshop" as const, position: new pc.Vec3(0, 0.6, 0) },
+        { location: "garden" as const, position: new pc.Vec3(-4, 0.6, -6) },
+        {
+          location: "observatory" as const,
+          position: new pc.Vec3(0, 2.2, beaconZ),
+        },
+      ];
+      onMarkers(
+        layoutWorldMarkers(
+          stops.map((stop) => {
+            const screen = camera.camera?.worldToScreen(stop.position);
+            return {
+              location: stop.location,
+              x: screen?.x ?? Number.NaN,
+              y: screen?.y ?? Number.NaN,
+            };
+          }),
+          width,
+          height,
+        ),
       );
     });
     const container = canvas.parentElement;
