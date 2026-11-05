@@ -420,6 +420,46 @@
   padding: 16px;
   background: #183843;
 }
+.trusted-inbox label {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+.trusted-inbox label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+}
+.trusted-inbox input:not([type="checkbox"]),
+.trusted-inbox textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+.inbox-record-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.inbox-record-list button {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+.inbox-record-list span {
+  font-size: .85rem;
+}
+.inbox-evidence {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 20px;
+  background: #183843;
+}
+.inbox-discovery {
+  border-top: 1px solid var(--island-line);
+  padding-top: 24px;
+}
 @media (min-width: 1000px) {
   .awakening:not(.connected-record) {
     display: grid;

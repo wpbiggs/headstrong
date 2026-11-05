@@ -261,7 +261,10 @@ export function createLearningService(
           action: "learning_record_choices_read",
           payload: {},
         });
-        return learningRecordChoicesSchema.parse({ items });
+        return learningRecordChoicesSchema.parse({
+          items,
+          viewerRole: user.role,
+        });
       });
     },
     async shareDiscovery(user: Session, input: unknown) {

@@ -11,11 +11,13 @@ import { mountAwakening } from "../lib/playcanvas-awakening";
 import { DiscoverySavePanel } from "./discovery-save-panel";
 import { LearningJourneyPanel } from "./learning-journey-panel";
 import { SeedwindGarden } from "./seedwind-garden";
+import { TrustedDiscoveryInbox } from "./trusted-discovery-inbox";
 
 export function AwakeningAdventure() {
   const [island, dispatch] = useReducer(islandReducer, undefined, newIsland);
   const [connected, setConnected] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [inbox, setInbox] = useState(false);
   const [note, setNote] = useState("");
   const [reflection, setReflection] = useState(false);
   const [ready, setReady] = useState(false);
@@ -24,7 +26,7 @@ export function AwakeningAdventure() {
   const current = useRef(island);
   current.current = island;
   const f = island.flight;
-  const playing = !island.paused && !connected && !saving;
+  const playing = !island.paused && !connected && !saving && !inbox;
   useEffect(() => setReady(true), []);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export function AwakeningAdventure() {
     setReflection(false);
   }
   useEffect(() => {
-    if (connected || saving) return;
+    if (connected || saving || inbox) return;
     function key(event: KeyboardEvent) {
       if (
         (event.target as HTMLElement).matches("input, textarea, select") ||
@@ -97,7 +99,9 @@ export function AwakeningAdventure() {
     }
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
-  }, [connected, saving]);
+  }, [connected, saving, inbox]);
+
+  if (inbox) return <TrustedDiscoveryInbox onBack={() => setInbox(false)} />;
 
   if (saving)
     return (
@@ -417,6 +421,16 @@ export function AwakeningAdventure() {
             }}
           >
             Save an island discovery (optional)
+          </button>
+          <button
+            type="button"
+            disabled={!ready}
+            onClick={() => {
+              dispatch({ type: "pause" });
+              setInbox(true);
+            }}
+          >
+            Trusted adult feedback inbox
           </button>
         </div>
       </footer>

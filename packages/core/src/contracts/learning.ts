@@ -75,6 +75,7 @@ export const learningQuestChoicesSchema = z.object({
   items: z.array(experienceSpecSchema).max(10),
 });
 export const learningRecordChoicesSchema = z.object({
+  viewerRole: z.enum(["student", "parent", "educator"]),
   items: z
     .array(
       z.object({

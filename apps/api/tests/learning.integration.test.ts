@@ -103,6 +103,7 @@ test("PostgreSQL + Hono learning journey: scoped, ordered, atomic and immutable"
       assert.equal((await request("parent", "/discoveries", body)).status, 403);
       for (const actor of ["learner", "parent", "educator"]) {
         const records = await (await request(actor, "/goals")).json();
+        assert.equal(records.viewerRole, fixture.sessions[actor].role);
         assert.equal(records.items.length, 1);
         assert.equal(records.items[0].id, body.submissionId);
         assert.equal("reflection" in records.items[0], false);

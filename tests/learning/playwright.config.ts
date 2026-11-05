@@ -11,6 +11,7 @@ export default defineConfig({
           "awakening.spec.ts",
           "discovery-connection.spec.ts",
           "seedwind.spec.ts",
+          "trusted-inbox.spec.ts",
         ],
   workers: 1,
   reporter: "list",
