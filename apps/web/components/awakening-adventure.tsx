@@ -124,6 +124,8 @@ export function AwakeningAdventure() {
       <DiscoverySavePanel
         attempts={island.attempts}
         seedTrials={island.garden.trials}
+        waterRoutes={island.waterworks.pours}
+        sky={island.sky}
         note={note}
         onBack={() => setSaving(false)}
       />
@@ -588,8 +590,9 @@ export function AwakeningAdventure() {
               : "The wide lens gathers the pattern near the center."}
           </output>
           <p>
-            These sky choices stay in this tab and are not included in discovery
-            uploads. Try the other lens with the same constellation.
+            These sky choices stay in this tab unless you separately select the
+            current setup on the optional save page. Try the other lens with the
+            same constellation.
           </p>
         </section>
       )}

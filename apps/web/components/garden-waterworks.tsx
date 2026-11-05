@@ -127,8 +127,9 @@ export function GardenWaterworks({
       )}
       <p className="island-small">
         A toy routing model, not real gardening advice. Last four cups only.
-        Water routes stay in this tab and are not included in seed discovery
-        uploads. No score, correct route or automatic mastery.
+        Water routes stay in this tab unless you separately select them on the
+        optional save page; seed sharing alone excludes them. No score, correct
+        route or automatic mastery.
       </p>
     </section>
   );

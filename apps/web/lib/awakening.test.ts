@@ -272,6 +272,63 @@ test("discovery selection is explicit, bounded and not an assessment", () => {
   );
 });
 
+test("water routes and current sky are separate explicit selections and fit the evidence budget together", () => {
+  const extra = {
+    waterRoutes: ["cove", "split"] as const,
+    sky: { constellation: "kite", lens: "close" } as const,
+  };
+  const routes = [...extra.waterRoutes];
+  assert.equal(
+    discoverySummary([], "private", false, false, [], false, {
+      ...extra,
+      waterRoutes: routes,
+    }),
+    "",
+  );
+  const water = discoverySummary([], "private", false, false, [], false, {
+    ...extra,
+    waterRoutes: routes,
+    includeWater: true,
+  });
+  assert.match(water, /Selected water routes/);
+  assert.match(water, /cove route · cove 3, slope 0, terrace 0/);
+  assert.match(water, /split route · cove 1, slope 1, terrace 1/);
+  assert.doesNotMatch(
+    water,
+    /private|Selected current sky|kite|blossom|leaves/,
+  );
+  const sky = discoverySummary([], "private", false, false, [], false, {
+    ...extra,
+    waterRoutes: routes,
+    includeSky: true,
+  });
+  assert.match(sky, /Selected current sky setup/);
+  assert.match(sky, /kite constellation · close lens · five lights/);
+  assert.doesNotMatch(sky, /private|Selected water routes|cove route/);
+  const all = discoverySummary(
+    Array(6).fill(finish(newIsland()).attempts[0]),
+    "x".repeat(500),
+    true,
+    true,
+    Array(4).fill(seedTrial("feathered", "ridge")),
+    true,
+    {
+      waterRoutes: ["terrace", "terrace", "terrace", "terrace"],
+      includeWater: true,
+      sky: extra.sky,
+      includeSky: true,
+    },
+  );
+  assert.ok(all.length <= 2000, `All selections use ${all.length} characters`);
+  assert.equal(
+    learningEvidenceInputSchema.safeParse({
+      reflection: all,
+      observedEntityIds: ["workshop", "beacon"],
+    }).success,
+    true,
+  );
+});
+
 test("discovery bridge requires the exact current curated scene and quest binding", () => {
   const detail = learningJourneyDetailSchema.parse({
     journey: {

@@ -10,23 +10,32 @@ import {
 } from "@headstrong/core";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { type Attempt, awakeningExperience } from "../lib/awakening";
+import {
+  type Attempt,
+  type Observatory,
+  awakeningExperience,
+} from "../lib/awakening";
 import {
   discoverySummary,
   isAwakeningRecord,
 } from "../lib/awakening-discovery";
 import type { SeedTrial } from "../lib/seedwind";
+import type { WaterGate } from "../lib/waterworks";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export function DiscoverySavePanel({
   attempts,
   seedTrials = [],
+  waterRoutes = [],
+  sky,
   note,
   onBack,
 }: {
   attempts: Attempt[];
   seedTrials?: SeedTrial[];
+  waterRoutes?: WaterGate[];
+  sky?: Observatory;
   note: string;
   onBack: () => void;
 }) {
@@ -35,6 +44,8 @@ export function DiscoverySavePanel({
   const [flights, setFlights] = useState(false);
   const [notes, setNotes] = useState(false);
   const [seeds, setSeeds] = useState(false);
+  const [water, setWater] = useState(false);
+  const [skySelected, setSkySelected] = useState(false);
   const [detail, setDetail] = useState<LearningJourneyDetail | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -58,7 +69,17 @@ export function DiscoverySavePanel({
     notes,
     seedTrials,
     seeds,
+    { waterRoutes, includeWater: water, sky, includeSky: skySelected },
   );
+  const observedEntityIds = [
+    ...((flights && attempts.length) ||
+    (notes && note.trim()) ||
+    (seeds && seedTrials.length) ||
+    (water && waterRoutes.length)
+      ? ["workshop"]
+      : []),
+    ...(skySelected && sky ? ["beacon"] : []),
+  ];
 
   useEffect(
     () => () => {
@@ -137,7 +158,15 @@ export function DiscoverySavePanel({
           throw new Error(
             "Choose an approved adventure and a discovery to share.",
           );
-        const key = JSON.stringify({ questId, summary, scene: chosen.scene });
+        const evidence = learningEvidenceInputSchema.parse({
+          reflection: summary,
+          observedEntityIds,
+        });
+        const key = JSON.stringify({
+          questId,
+          ...evidence,
+          scene: chosen.scene,
+        });
         if (!submission.current || submission.current.key !== key)
           submission.current = { key, id: crypto.randomUUID() };
         const receipt = learningDiscoveryReceiptSchema.parse(
@@ -146,8 +175,7 @@ export function DiscoverySavePanel({
               submissionId: submission.current.id,
               questId,
               scene: chosen.scene,
-              reflection: summary,
-              observedEntityIds: ["workshop"],
+              ...evidence,
             },
             "/discoveries",
           ),
@@ -170,11 +198,10 @@ export function DiscoverySavePanel({
           throw new Error(
             "This record already has a discovery. Refresh to read its feedback; it cannot be overwritten.",
           );
-        if (!summary)
-          throw new Error("Choose a flight or your optional note to share.");
+        if (!summary) throw new Error("Choose a discovery to share.");
         const body = learningEvidenceInputSchema.parse({
           reflection: summary,
-          observedEntityIds: ["workshop"],
+          observedEntityIds,
         });
         // No asynchronous gap between the final epoch check and explicit submission.
         if (version !== epoch.current || controller.signal.aborted) return;
@@ -238,15 +265,40 @@ export function DiscoverySavePanel({
           />{" "}
           Share seed experiments ({seedTrials.length})
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={water}
+            disabled={!waterRoutes.length}
+            onChange={(event) => setWater(event.target.checked)}
+          />{" "}
+          Share water routes ({waterRoutes.length})
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={skySelected}
+            disabled={!sky}
+            onChange={(event) => setSkySelected(event.target.checked)}
+          />{" "}
+          Share my current sky setup
+        </label>
       </fieldset>
       <h2>Exactly what will be shared</h2>
       <pre className="discovery-preview">
         {summary || "Nothing selected. You can return to play without sharing."}
       </pre>
       <p>
-        Saving sends only this text and the workshop observation to your private
-        Awakening record, creating one only when you share. Its assigned
-        educator and linked guardian can read it. Feedback is human; flight
+        Observation anchors:{" "}
+        {observedEntityIds.length
+          ? observedEntityIds.join(", ")
+          : "none selected"}
+        . These are curated scene locations, not extra gameplay history.
+      </p>
+      <p>
+        Saving sends only this text and the listed scene observations to your
+        private Awakening record, creating one only when you share. Its assigned
+        educator and linked guardian can read it. Feedback is human; gameplay
         results never establish mastery. No other notes or gameplay history are
         uploaded.
       </p>
@@ -275,6 +327,8 @@ export function DiscoverySavePanel({
               setFlights(false);
               setNotes(false);
               setSeeds(false);
+              setWater(false);
+              setSkySelected(false);
               submission.current = null;
               setToken(e.target.value);
             }}

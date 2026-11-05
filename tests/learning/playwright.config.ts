@@ -10,6 +10,7 @@ export default defineConfig({
           "studio.spec.ts",
           "awakening.spec.ts",
           "discovery-connection.spec.ts",
+          "experiment-sharing.spec.ts",
           "seedwind.spec.ts",
           "trusted-inbox.spec.ts",
         ],
