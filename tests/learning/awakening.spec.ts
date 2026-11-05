@@ -21,6 +21,23 @@ test("open trail preserves a flight and offers local sky experiments without upl
   await expect(
     page.getByRole("region", { name: "Observatory experiments" }),
   ).toBeVisible();
+  const layout = await page.evaluate(() => {
+    const trail = document
+      .querySelector("#island-trail")
+      ?.getBoundingClientRect();
+    const world = document
+      .querySelector(".island-world")
+      ?.getBoundingClientRect();
+    const sky = document
+      .querySelector(".sky-workshop")
+      ?.getBoundingClientRect();
+    if (!trail || !world || !sky) throw new Error("Trail layout is missing");
+    return {
+      trailAboveWorld: trail.bottom <= world.top,
+      skyBesideWorld: sky.left >= world.right,
+    };
+  });
+  expect(layout).toEqual({ trailAboveWorld: true, skyBesideWorld: true });
   await expect(
     page.getByRole("region", { name: "Flight controls" }),
   ).toHaveCount(0);

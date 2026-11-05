@@ -463,6 +463,9 @@
 .island-trail,
 .sky-workshop {
   padding: 20px 0;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
 }
 .sky-map {
   display: block;
@@ -482,20 +485,29 @@
   }
   .island-header,
   .island-intro,
+  .island-trail,
   .island-footer {
     grid-column: 1 / -1;
   }
   .island-play-grid {
     display: contents;
   }
+  .island-trail {
+    grid-row: 3;
+  }
+  .sky-workshop,
+  .seedwind-garden {
+    grid-column: 2;
+    grid-row: 4;
+  }
   .island-world {
     align-self: start;
     grid-column: 1;
-    grid-row: 3;
+    grid-row: 4;
   }
   .flight-console {
     grid-column: 2;
-    grid-row: 3;
+    grid-row: 4;
   }
   .island-discoveries {
     grid-column: 1 / -1;
